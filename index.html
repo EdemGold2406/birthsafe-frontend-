@@ -11,73 +11,80 @@
         @theme { --color-birthsafe: #db2777; --color-birthsafe-light: #fdf2f8; }
     </style>
 </head>
-<body class="bg-birthsafe-light antialiased font-sans">
+<body class="bg-birthsafe-light antialiased font-sans text-gray-900">
 
     <!-- VIEW 1: CUSTOMER FORM -->
     <div id="customer-view" class="hidden min-h-screen flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
             <div class="bg-birthsafe p-6 text-center text-white">
-                <h1 class="text-2xl font-bold">BirthSafe NG payment verification</h1>
-                <p class="text-pink-100 text-sm opacity-90">your payment will be verified within 24 to 48 hours</p>
+                <h1 class="text-2xl font-bold">BirthSafe NG Payment Verification</h1>
+                <p class="text-pink-100 text-sm opacity-90 leading-tight mt-1">Your payment will be verified within 24 to 48 hours</p>
             </div>
             <form id="payment-form" class="p-6 space-y-4">
-                <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-3 border rounded-xl outline-none">
-                <select id="plan" class="w-full p-3 border rounded-xl bg-white">
+                <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
+                <select id="plan" class="w-full p-3 border border-gray-200 rounded-xl bg-white outline-none">
                     <option value="35k Plan">Standard (₦35,000)</option>
                     <option value="50k Plan">Premium (₦50,000)</option>
                 </select>
-                <input type="tel" id="whatsapp" placeholder="please enter your WhatsApp Number" required class="w-full p-3 border rounded-xl">
-                <div class="border-2 border-dashed border-pink-200 rounded-xl p-4 text-center bg-pink-50 relative">
+                <input type="tel" id="whatsapp" placeholder="WhatsApp Number (080...)" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
+                <div class="border-2 border-dashed border-pink-200 rounded-xl p-6 text-center bg-pink-50 relative">
                     <input type="file" id="receipt" accept="image/*" required class="absolute inset-0 opacity-0 cursor-pointer">
-                    <p class="text-birthsafe font-semibold text-sm">Please upload your payment receipt</p>
+                    <p class="text-birthsafe font-semibold text-sm">Upload Payment Receipt</p>
+                    <p class="text-xs text-gray-400 mt-1">Tap here to select image</p>
                 </div>
-                <button type="submit" id="submit-btn" class="w-full bg-birthsafe text-white py-4 rounded-xl font-bold shadow-lg">Submit Verification</button>
+                <button type="submit" id="submit-btn" class="w-full bg-birthsafe text-white py-4 rounded-xl font-bold shadow-lg active:scale-95 transition-transform">
+                    Submit Verification
+                </button>
             </form>
-            <div id="success-msg" class="hidden p-10 text-center text-gray-800">
-                <h2 class="text-2xl font-bold">✅ Sent!</h2>
-                <p class="mt-2 text-gray-500">We will verify within 24-48 hours.</p>
+            <div id="success-msg" class="hidden p-10 text-center animate-bounce">
+                <h2 class="text-3xl font-bold text-gray-800">✅ Sent!</h2>
+                <p class="mt-2 text-gray-500">Thank you. We will be in touch.</p>
             </div>
         </div>
     </div>
 
-    <!-- VIEW 2: ADMIN LIST (VIEW ALL) -->
-    <div id="admin-list-view" class="hidden min-h-screen p-4">
+    <!-- VIEW 2: ADMIN LIST -->
+    <div id="admin-list-view" class="hidden min-h-screen p-4 max-w-md mx-auto">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">All Payments</h2>
-        <div id="list-container" class="space-y-3">
-            <!-- List items will be injected here -->
-        </div>
+        <div id="list-container" class="space-y-3"></div>
     </div>
 
-    <!-- VIEW 3: ADMIN DETAIL (VERIFY ONE) -->
+    <!-- VIEW 3: ADMIN DETAIL -->
     <div id="admin-detail-view" class="hidden min-h-screen p-4">
         <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
             <div class="bg-gray-800 p-4 text-white flex justify-between">
-                <span>Verification</span>
-                <span id="det-status" class="bg-yellow-500 text-black px-2 rounded font-bold uppercase text-xs">Pending</span>
+                <span class="font-bold">Admin Review</span>
+                <span id="det-status" class="bg-yellow-500 text-black px-2 py-0.5 rounded font-bold uppercase text-xs">Pending</span>
             </div>
-            <div class="p-6 space-y-4">
-                <h2 id="det-name" class="text-xl font-bold">-</h2>
-                <p id="det-plan" class="text-birthsafe font-bold">-</p>
-                <img id="det-img" src="" class="w-full border rounded-lg shadow-sm">
-                <div class="flex gap-2 pt-4">
-                    <button onclick="updateStatus('verified')" class="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold">Approve</button>
-                    <button onclick="updateStatus('rejected')" class="flex-1 bg-red-600 text-white py-4 rounded-xl font-bold">Reject</button>
+            <div class="p-6 space-y-4 text-center">
+                <h2 id="det-name" class="text-2xl font-bold">-</h2>
+                <p id="det-plan" class="text-birthsafe font-bold text-lg">-</p>
+                <div class="border-4 border-gray-100 rounded-xl overflow-hidden shadow-inner">
+                    <img id="det-img" src="" class="w-full h-auto">
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button onclick="updateStatus('verified')" class="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold shadow-md">Approve ✅</button>
+                    <button onclick="updateStatus('rejected')" class="flex-1 bg-red-600 text-white py-4 rounded-xl font-bold shadow-md">Reject ❌</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Supabase Init
+        const { createClient } = window.supabase;
         const SUPABASE_URL = 'https://qgrluobqmyzpaeblonbx.supabase.co';
         const SUPABASE_KEY = 'sb_secret_nO2pexNfAlx0Xv-0BaMXVw_OVRdA28J';
-        const BACKEND_URL = 'https://YOUR-BACKEND.onrender.com';
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // This will be your Backend URL on Render
+        const BACKEND_URL = 'https://birthsafe-backend.onrender.com';
 
         const params = new URLSearchParams(window.location.search);
         const pid = params.get('id');
         const view = params.get('view');
 
-        // ROUTER
+        // Simple Router
         if (pid) {
             document.getElementById('admin-detail-view').classList.remove('hidden');
             loadDetail(pid);
@@ -88,63 +95,73 @@
             document.getElementById('customer-view').classList.remove('hidden');
         }
 
-        // CUSTOMER FORM SUBMIT
+        // Customer Logic
         document.getElementById('payment-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            btn.innerText = "Uploading...";
+            btn.innerText = "Processing...";
             btn.disabled = true;
 
-            const file = document.getElementById('receipt').files[0];
-            const fName = `${Date.now()}_${file.name}`;
-            await sb.storage.from('receipts').upload(fName, file);
-            const { data: { publicUrl } } = sb.storage.from('receipts').getPublicUrl(fName);
+            try {
+                const file = document.getElementById('receipt').files[0];
+                const fName = `${Date.now()}_${file.name.replace(/\s/g, '')}`;
+                
+                const { error: uploadError } = await sb.storage.from('receipts').upload(fName, file);
+                if (uploadError) throw uploadError;
 
-            const payload = {
-                fullName: document.getElementById('fullName').value,
-                plan: document.getElementById('plan').value,
-                whatsapp: document.getElementById('whatsapp').value,
-                receiptUrl: publicUrl
-            };
+                const { data: { publicUrl } } = sb.storage.from('receipts').getPublicUrl(fName);
 
-            await fetch(`${BACKEND_URL}/api/submit-payment`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+                await fetch(`${BACKEND_URL}/api/submit-payment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName: document.getElementById('fullName').value,
+                        plan: document.getElementById('plan').value,
+                        whatsapp: document.getElementById('whatsapp').value,
+                        receiptUrl: publicUrl
+                    })
+                });
 
-            document.getElementById('payment-form').classList.add('hidden');
-            document.getElementById('success-msg').classList.remove('hidden');
+                document.getElementById('payment-form').classList.add('hidden');
+                document.getElementById('success-msg').classList.remove('hidden');
+            } catch (err) {
+                alert("Submission failed: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "Submit Verification";
+            }
         };
 
-        // ADMIN LIST
+        // Admin Logic
         async function loadList() {
             const { data } = await sb.from('payments').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('list-container');
-            container.innerHTML = data.map(p => `
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${p.status === 'verified' ? 'border-green-500' : 'border-yellow-500'} flex justify-between items-center" onclick="window.location.search = '?id=${p.id}'">
+            container.innerHTML = data.length ? data.map(p => `
+                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${p.status === 'verified' ? 'border-green-500' : 'border-yellow-500'} flex justify-between items-center cursor-pointer active:scale-95 transition-transform" onclick="window.location.search = '?id=${p.id}'">
                     <div>
                         <p class="font-bold text-gray-800">${p.full_name}</p>
-                        <p class="text-xs text-gray-500">${p.plan_amount} • ${p.status}</p>
+                        <p class="text-xs text-gray-500 font-medium">${p.plan_amount} • <span class="uppercase">${p.status}</span></p>
                     </div>
-                    <span class="text-gray-300">❯</span>
+                    <span class="text-gray-300 font-bold text-xl">❯</span>
                 </div>
-            `).join('');
+            `).join('') : '<p class="text-center text-gray-400 py-10">No payments found.</p>';
         }
 
-        // ADMIN DETAIL
         async function loadDetail(id) {
-            const { data } = await sb.from('payments').select('*').eq('id', id).single();
-            document.getElementById('det-name').innerText = data.full_name;
-            document.getElementById('det-plan').innerText = data.plan_amount;
-            document.getElementById('det-img').src = data.receipt_url;
-            document.getElementById('det-status').innerText = data.status;
+            const { data, error } = await sb.from('payments').select('*').eq('id', id).single();
+            if (data) {
+                document.getElementById('det-name').innerText = data.full_name;
+                document.getElementById('det-plan').innerText = data.plan_amount;
+                document.getElementById('det-img').src = data.receipt_url;
+                document.getElementById('det-status').innerText = data.status;
+            }
         }
 
         async function updateStatus(s) {
-            await sb.from('payments').update({ status: s }).eq('id', pid);
-            alert("Marked as " + s);
-            window.location.search = "?view=admin";
+            const { error } = await sb.from('payments').update({ status: s }).eq('id', pid);
+            if (!error) {
+                alert("User marked as " + s);
+                window.location.search = "?view=admin";
+            }
         }
     </script>
 </body>
