@@ -4,221 +4,151 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BirthSafe NG Portal</title>
-    <!-- 1. Load Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <!-- 2. Custom Styles -->
     <style type="text/tailwindcss">
         @theme { --color-birthsafe: #db2777; --color-birthsafe-light: #fdf2f8; }
     </style>
 </head>
 <body class="bg-birthsafe-light antialiased font-sans text-gray-900">
 
-    <!-- === SCREEN 1: CUSTOMER FORM (Default) === -->
+    <!-- CUSTOMER VIEW -->
     <div id="customer-view" class="hidden min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-pink-100">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
             <div class="bg-birthsafe p-6 text-center text-white">
                 <h1 class="text-2xl font-bold">BirthSafe NG</h1>
-                <p class="text-pink-100 text-sm mt-1">Payment Verification Portal</p>
+                <p class="text-pink-100 text-sm">Payment Verification</p>
             </div>
-            
             <form id="payment-form" class="p-6 space-y-4">
-                <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-birthsafe outline-none">
-                
-                <select id="plan" class="w-full p-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-birthsafe outline-none">
+                <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-3 border rounded-xl outline-none border-gray-300">
+                <select id="plan" class="w-full p-3 border rounded-xl bg-white border-gray-300">
                     <option value="35k Plan">Standard (₦35,000)</option>
                     <option value="50k Plan">Premium (₦50,000)</option>
-                    <option value="100k Plan">Exclusive (₦100,000)</option>
                 </select>
-                
-                <input type="tel" id="whatsapp" placeholder="WhatsApp Number" required class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-birthsafe outline-none">
-                <input type="tel" id="telegram" placeholder="Telegram Number (Optional)" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-birthsafe outline-none">
-                
-                <div class="border-2 border-dashed border-pink-200 rounded-xl p-6 text-center bg-pink-50 relative hover:bg-pink-100 transition">
+                <input type="tel" id="whatsapp" placeholder="WhatsApp Number" required class="w-full p-3 border rounded-xl border-gray-300">
+                <div class="border-2 border-dashed border-pink-200 rounded-xl p-4 text-center bg-pink-50 relative">
                     <input type="file" id="receipt" accept="image/*" required class="absolute inset-0 opacity-0 cursor-pointer">
-                    <p class="text-birthsafe font-bold">Upload Receipt</p>
-                    <p class="text-xs text-gray-500">Tap to select image</p>
+                    <p class="text-birthsafe font-bold text-sm">Upload Receipt</p>
                 </div>
-
-                <button type="submit" id="submit-btn" class="w-full bg-birthsafe text-white py-4 rounded-xl font-bold shadow-lg hover:bg-pink-700 transition-all">
-                    Submit Verification
-                </button>
+                <button type="submit" id="submit-btn" class="w-full bg-birthsafe text-white py-4 rounded-xl font-bold shadow-lg">Submit Verification</button>
             </form>
-
-            <div id="success-msg" class="hidden p-10 text-center animate-pulse">
-                <h2 class="text-3xl font-bold text-gray-800">✅ Received!</h2>
-                <p class="mt-2 text-gray-600">We will verify your payment within 24-48 hours.</p>
-            </div>
+            <div id="success-msg" class="hidden p-10 text-center"><h2 class="text-3xl font-bold">✅ Sent!</h2></div>
         </div>
     </div>
 
-    <!-- === SCREEN 2: ADMIN LIST (View All) === -->
+    <!-- ADMIN LIST VIEW -->
     <div id="admin-list-view" class="hidden min-h-screen p-4 max-w-md mx-auto">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">All Payments</h2>
-        <div id="list-container" class="space-y-3 pb-10">Loading...</div>
+        <h2 class="text-2xl font-bold mb-4">All Payments</h2>
+        <div id="list-container" class="space-y-3">Loading...</div>
     </div>
 
-    <!-- === SCREEN 3: ADMIN DETAIL (Verify One) === -->
-    <div id="admin-detail-view" class="hidden min-h-screen p-4 flex items-center justify-center">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div class="bg-gray-800 p-4 text-white flex justify-between items-center">
-                <span class="font-bold">Review Payment</span>
-                <span id="det-status" class="text-xs uppercase font-bold bg-yellow-400 text-black px-2 py-1 rounded">Pending</span>
+    <!-- ADMIN DETAIL VIEW -->
+    <div id="admin-detail-view" class="hidden min-h-screen p-4">
+        <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="bg-gray-800 p-4 text-white flex justify-between">
+                <span class="font-bold">Review</span>
+                <span id="det-status" class="bg-yellow-400 text-black px-2 rounded text-xs uppercase font-bold">Pending</span>
             </div>
-            <div class="p-5 space-y-4">
-                <div class="text-center">
-                    <h2 id="det-name" class="text-xl font-bold text-gray-900">-</h2>
-                    <p id="det-plan" class="text-birthsafe font-bold">-</p>
-                    <p id="det-wa" class="text-sm text-gray-500">-</p>
+            <div class="p-6 space-y-4 text-center">
+                <h2 id="det-name" class="text-2xl font-bold">-</h2>
+                <p id="det-plan" class="text-birthsafe font-bold">-</p>
+                <img id="det-img" src="" class="w-full h-auto rounded border">
+                <div class="flex gap-3 pt-4">
+                    <button onclick="updateStatus('verified')" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">Verify ✅</button>
+                    <button onclick="updateStatus('rejected')" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold">Reject ❌</button>
                 </div>
-                
-                <div class="border rounded-lg overflow-hidden bg-gray-100">
-                    <a id="det-img-link" target="_blank" href="#"><img id="det-img" src="" class="w-full h-auto object-contain"></a>
-                </div>
-                
-                <div class="flex gap-3 pt-2">
-                    <button onclick="updateStatus('verified')" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold shadow">Verify ✅</button>
-                    <button onclick="updateStatus('rejected')" class="flex-1 bg-red-600 text-white py-3 rounded-lg font-bold shadow">Reject ❌</button>
-                </div>
-                <button onclick="window.location.search='?view=admin'" class="w-full text-gray-400 text-sm py-2">Back to List</button>
+                <button onclick="window.location.search='?view=admin'" class="text-sm text-gray-400 mt-2">Back to List</button>
             </div>
         </div>
     </div>
 
-    <!-- === LOGIC === -->
     <script>
-        // 1. CONFIGURATION
+        // --- CONFIGURATION ---
         const { createClient } = window.supabase;
         const SUPABASE_URL = 'https://qgrluobqmyzpaeblonbx.supabase.co';
         const SUPABASE_KEY = 'sb_secret_nO2pexNfAlx0Xv-0BaMXVw_OVRdA28J';
         
-        // !!! IMPORTANT: REPLACE THIS WITH YOUR RENDER BACKEND URL !!!
-        // Do NOT put a slash '/' at the end.
-        const BACKEND_URL = 'https://birthsafe-backend.onrender.com'; 
+        // PASTE YOUR RENDER BACKEND URL HERE (NO SLASH AT END)
+        const BACKEND_URL = 'YOUR_BACKEND_URL_HERE'; 
 
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
         const tg = window.Telegram?.WebApp;
         if(tg) tg.expand();
 
-        // 2. ROUTER LOGIC
         const params = new URLSearchParams(window.location.search);
         const pid = params.get('id');
         const view = params.get('view');
 
+        // ROUTER
         if (pid) {
-            // Show Single Detail (Admin)
             document.getElementById('admin-detail-view').classList.remove('hidden');
             loadDetail(pid);
         } else if (view === 'admin') {
-            // Show List (Admin)
             document.getElementById('admin-list-view').classList.remove('hidden');
             loadList();
         } else {
-            // Show Form (Customer)
             document.getElementById('customer-view').classList.remove('hidden');
         }
 
-        // 3. CUSTOMER: SUBMIT FORM
+        // 1. CUSTOMER SUBMIT
         document.getElementById('payment-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            btn.innerText = "Uploading Proof...";
-            btn.disabled = true;
+            btn.innerText = "Processing..."; btn.disabled = true;
 
             try {
                 const file = document.getElementById('receipt').files[0];
                 const fileName = `${Date.now()}_${file.name.replace(/\s/g, '')}`;
-                
-                // Upload Image
-                const { error: uploadError } = await sb.storage.from('receipts').upload(fileName, file);
-                if (uploadError) throw uploadError;
+                const { error: upErr } = await sb.storage.from('receipts').upload(fileName, file);
+                if (upErr) throw upErr;
 
                 const { data: { publicUrl } } = sb.storage.from('receipts').getPublicUrl(fileName);
 
-                // Send to Backend
-                const payload = {
-                    fullName: document.getElementById('fullName').value,
-                    plan: document.getElementById('plan').value,
-                    whatsapp: document.getElementById('whatsapp').value,
-                    telegram: document.getElementById('telegram').value,
-                    receiptUrl: publicUrl
-                };
-
-                const res = await fetch(`${BACKEND_URL}/api/submit-payment`, {
+                await fetch(`${BACKEND_URL}/api/submit-payment`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        fullName: document.getElementById('fullName').value,
+                        plan: document.getElementById('plan').value,
+                        whatsapp: document.getElementById('whatsapp').value,
+                        receiptUrl: publicUrl
+                    })
                 });
-                
-                if(!res.ok) throw new Error("Server error");
 
                 document.getElementById('payment-form').classList.add('hidden');
                 document.getElementById('success-msg').classList.remove('hidden');
-
-            } catch (err) {
-                alert("Error: " + err.message);
-                btn.disabled = false;
-                btn.innerText = "Submit Verification";
-            }
+            } catch (err) { alert(err.message); btn.disabled = false; }
         };
 
-        // 4. ADMIN: LOAD LIST
+        // 2. ADMIN FUNCTIONS
         async function loadList() {
             const { data } = await sb.from('payments').select('*').order('created_at', { ascending: false });
-            const container = document.getElementById('list-container');
-            
-            if(!data || data.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-400 mt-10">No payments yet.</p>';
-                return;
-            }
-
-            container.innerHTML = data.map(p => `
-                <div onclick="window.location.search='?id=${p.id}'" 
-                     class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${p.status === 'verified' ? 'border-green-500' : p.status === 'rejected' ? 'border-red-500' : 'border-yellow-500'} flex justify-between items-center cursor-pointer active:scale-95 transition">
-                    <div>
-                        <p class="font-bold text-gray-800">${p.full_name}</p>
-                        <p class="text-xs text-gray-500">${p.plan_amount} • <span class="uppercase font-bold">${p.status}</span></p>
-                    </div>
-                    <span class="text-gray-300 font-bold text-xl">❯</span>
-                </div>
-            `).join('');
+            document.getElementById('list-container').innerHTML = data.map(p => `
+                <div onclick="window.location.search='?id=${p.id}'" class="bg-white p-4 rounded-xl shadow border-l-4 ${p.status=='verified'?'border-green-500':'border-yellow-500'} flex justify-between cursor-pointer">
+                    <div><p class="font-bold">${p.full_name}</p><p class="text-xs text-gray-500">${p.plan_amount} • ${p.status}</p></div><span>❯</span>
+                </div>`).join('');
         }
 
-        // 5. ADMIN: LOAD DETAIL
         async function loadDetail(id) {
             const { data } = await sb.from('payments').select('*').eq('id', id).single();
-            if (data) {
+            if(data) {
                 document.getElementById('det-name').innerText = data.full_name;
                 document.getElementById('det-plan').innerText = data.plan_amount;
-                document.getElementById('det-wa').innerText = data.whatsapp_number;
                 document.getElementById('det-img').src = data.receipt_url;
-                document.getElementById('det-img-link').href = data.receipt_url;
                 document.getElementById('det-status').innerText = data.status;
-                
-                // Colorize badge
-                const badge = document.getElementById('det-status');
-                badge.className = `text-xs uppercase font-bold px-2 py-1 rounded text-white ${data.status === 'verified' ? 'bg-green-600' : data.status === 'rejected' ? 'bg-red-600' : 'bg-yellow-500 text-black'}`;
             }
         }
 
-        // 6. ADMIN: UPDATE STATUS
-        async function updateStatus(newStatus) {
-            if(!confirm(`Mark this payment as ${newStatus}?`)) return;
-            
-            // Optimistic UI update
-            document.getElementById('det-status').innerText = newStatus;
-            
+        async function updateStatus(s) {
+            if(!confirm(`Mark as ${s}?`)) return;
             await fetch(`${BACKEND_URL}/api/verify-payment`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: pid, status: newStatus })
+                body: JSON.stringify({ id: pid, status: s })
             });
-
-            alert(`Marked as ${newStatus}`);
-            if(tg) tg.close(); // Close Telegram view if inside bot
-            else window.location.search = '?view=admin'; // Go back to list if in browser
+            alert('Updated!');
+            window.location.search = '?view=admin';
         }
     </script>
 </body>
