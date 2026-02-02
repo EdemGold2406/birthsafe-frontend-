@@ -5,100 +5,138 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BirthSafe NG Portal</title>
     
-    <!-- Libraries -->
+    <!-- 1. Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
+    <!-- 2. Styles -->
     <style type="text/tailwindcss">
         @theme { --color-birthsafe: #db2777; --color-birthsafe-light: #fdf2f8; }
     </style>
 </head>
 <body class="bg-birthsafe-light antialiased font-sans text-gray-900">
 
-    <!-- === VIEW 1: CUSTOMER FORM === -->
+    <!-- =========================================
+         VIEW 1: CUSTOMER FORM
+         ========================================= -->
     <div id="customer-view" class="hidden min-h-screen flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-pink-100">
             <div class="bg-birthsafe p-6 text-center text-white">
-                <h1 class="text-2xl font-bold">BirthSafe NG</h1>
-                <p class="text-pink-100 text-sm mt-1">Payment Verification Portal</p>
+                <h1 class="text-2xl font-bold tracking-tight">BirthSafe NG</h1>
+                <p class="text-pink-100 text-sm mt-1 font-medium">Payment Verification Portal</p>
             </div>
             
             <form id="payment-form" class="p-6 space-y-4">
-                <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
-                <select id="plan" class="w-full p-3 border border-gray-200 rounded-xl bg-white outline-none">
-                    <option value="35k Plan">Standard Plan (₦35,000)</option>
-                    <option value="50k Plan">Premium Plan (₦50,000)</option>
-                    <option value="100k Plan">Exclusive Plan (₦100,000)</option>
-                </select>
-                <input type="tel" id="whatsapp" placeholder="WhatsApp Number" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
-                <input type="tel" id="telegram" placeholder="Telegram Number (Optional)" class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
+                <div>
+                    <input type="text" id="fullName" placeholder="Full Name" required 
+                        class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-birthsafe outline-none transition-all placeholder-gray-400">
+                </div>
+
+                <div class="relative">
+                    <select id="plan" class="w-full p-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-birthsafe outline-none appearance-none text-gray-700">
+                        <option value="35k Plan">Standard Plan (₦35,000)</option>
+                        <option value="50k Plan">Premium Plan (₦50,000)</option>
+                        <option value="100k Plan">Exclusive Plan (₦100,000)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <input type="tel" id="whatsapp" placeholder="WhatsApp Number (080...)" required 
+                        class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-birthsafe outline-none transition-all placeholder-gray-400">
+                </div>
+
+                <div>
+                    <input type="tel" id="telegram" placeholder="Telegram Number (Optional)" 
+                        class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-birthsafe outline-none transition-all placeholder-gray-400">
+                </div>
                 
-                <div class="border-2 border-dashed border-pink-200 rounded-xl p-6 text-center bg-pink-50 relative group cursor-pointer">
+                <div class="border-2 border-dashed border-pink-200 rounded-xl p-6 text-center bg-pink-50 relative hover:bg-pink-100 transition cursor-pointer group">
                     <input type="file" id="receipt" accept="image/*" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                     <div class="flex flex-col items-center">
-                        <span class="text-3xl mb-2">📸</span>
+                        <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">📸</span>
                         <p class="text-birthsafe font-bold">Upload Payment Receipt</p>
+                        <p class="text-xs text-gray-400 mt-1">Tap here to select image</p>
                     </div>
                 </div>
 
-                <button type="submit" id="submit-btn" class="w-full bg-birthsafe text-white py-4 rounded-xl font-bold shadow-lg active:scale-95 transition-all">
+                <button type="submit" id="submit-btn" 
+                    class="w-full bg-birthsafe text-white py-4 rounded-xl font-bold shadow-lg shadow-pink-200 hover:bg-pink-700 active:scale-95 transition-all">
                     Submit Verification
                 </button>
             </form>
 
             <div id="success-msg" class="hidden p-10 text-center animate-bounce">
-                <h2 class="text-3xl font-bold text-gray-800">✅ Received!</h2>
-                <p class="mt-2 text-gray-500">Check your WhatsApp in 24-48h.</p>
+                <div class="text-6xl mb-4">✅</div>
+                <h2 class="text-2xl font-bold text-gray-800">Received!</h2>
+                <p class="mt-2 text-gray-500 leading-relaxed">We will verify within 24-48 hours.</p>
             </div>
         </div>
     </div>
 
-    <!-- === VIEW 2: ADMIN LIST === -->
+    <!-- =========================================
+         VIEW 2: ADMIN LIST
+         ========================================= -->
     <div id="admin-list-view" class="hidden min-h-screen p-4 max-w-md mx-auto">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">📋 All Payments</h2>
-        <div id="list-container" class="space-y-3 pb-20">Loading...</div>
+        <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+            <span>📋</span> All Payments
+        </h2>
+        <div id="list-container" class="space-y-3 pb-20">
+            <p class="text-center text-gray-400 mt-10">Loading payments...</p>
+        </div>
     </div>
 
-    <!-- === VIEW 3: ADMIN DETAIL === -->
+    <!-- =========================================
+         VIEW 3: ADMIN DETAIL
+         ========================================= -->
     <div id="admin-detail-view" class="hidden min-h-screen p-4 flex items-center justify-center">
         <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
             <div class="bg-gray-800 p-4 text-white flex justify-between items-center">
-                <span class="font-bold">Review Payment</span>
+                <span class="font-bold flex items-center gap-2">🛡️ Review</span>
                 <span id="det-status" class="text-xs uppercase font-bold bg-yellow-400 text-black px-2 py-1 rounded">Pending</span>
             </div>
             
-            <div class="p-5 space-y-4">
-                <div class="text-center">
+            <div class="p-6 space-y-5">
+                <div class="text-center space-y-1">
                     <h2 id="det-name" class="text-2xl font-bold text-gray-900">-</h2>
                     <p id="det-plan" class="text-birthsafe font-bold text-lg">-</p>
-                    <p id="det-wa" class="text-sm text-gray-500 mt-1">WA: -</p>
+                    <p id="det-wa" class="text-sm text-gray-500">-</p>
                 </div>
                 
-                <!-- Improved Image Display -->
                 <div class="border-2 border-gray-200 rounded-xl overflow-hidden bg-gray-50">
-                    <p class="text-xs text-gray-400 text-center pt-2">Tap image to zoom</p>
+                    <p class="text-xs text-center text-gray-400 pt-2">Tap image to zoom</p>
                     <a id="det-img-link" target="_blank" href="#">
-                        <!-- Removed 'h-64' to let image grow naturally, added max-height -->
-                        <img id="det-img" src="" class="w-full max-h-[500px] object-contain" alt="Receipt">
+                        <img id="det-img" src="" class="w-full max-h-[400px] object-contain" alt="Receipt">
                     </a>
                 </div>
                 
                 <div class="flex gap-3 pt-2">
-                    <button onclick="updateStatus('verified')" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold shadow">Verify ✅</button>
-                    <button onclick="updateStatus('rejected')" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold shadow">Reject ❌</button>
+                    <button onclick="updateStatus('verified')" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold shadow-md transition-colors">
+                        ✅ Verify
+                    </button>
+                    <button onclick="updateStatus('rejected')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold shadow-md transition-colors">
+                        ❌ Reject
+                    </button>
                 </div>
-                <button onclick="window.location.search='?view=admin'" class="w-full text-gray-400 text-sm py-3">Back to List</button>
+                
+                <button onclick="window.location.search='?view=admin'" class="w-full text-gray-400 text-sm py-3 hover:text-gray-600">
+                    ← Back to List
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- =========================================
+         JAVASCRIPT LOGIC
+         ========================================= -->
     <script>
         const { createClient } = window.supabase;
         
-        // SUPABASE CONFIG
+        // --- CONFIGURATION ---
         const SUPABASE_URL = 'https://qgrluobqmyzpaeblonbx.supabase.co';
-        const SUPABASE_KEY = 'sb_secret_nO2pexNfAlx0Xv-0BaMXVw_OVRdA28J';
+        
+        // ✅ UPDATED PUBLISHABLE KEY
+        const SUPABASE_KEY = 'sb_publishable_V2uL6AajUGNGUfazQXj78Q_klGpJ4Ad';
         
         // BACKEND URL
         const BACKEND_URL = 'https://birthsafe-backend.onrender.com';
@@ -122,21 +160,26 @@
             document.getElementById('customer-view').classList.remove('hidden');
         }
 
-        // SUBMIT FORM
+        // 1. SUBMIT FORM
         document.getElementById('payment-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
+            const originalText = btn.innerText;
             btn.innerText = "Uploading..."; btn.disabled = true;
 
             try {
                 const file = document.getElementById('receipt').files[0];
+                if (!file) throw new Error("Please select a receipt.");
+
                 const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
                 
-                const { error: upErr } = await sb.storage.from('receipts').upload(fileName, file);
-                if (upErr) throw upErr;
+                // Upload Image
+                const { error: uploadError } = await sb.storage.from('receipts').upload(fileName, file);
+                if (uploadError) throw new Error("Image upload failed: " + uploadError.message);
 
                 const { data: { publicUrl } } = sb.storage.from('receipts').getPublicUrl(fileName);
 
+                // Send to Backend
                 const res = await fetch(`${BACKEND_URL}/api/submit-payment`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -149,65 +192,81 @@
                     })
                 });
                 
-                if(!res.ok) throw new Error("Backend connection failed");
+                if (!res.ok) throw new Error("Server submission failed.");
 
                 document.getElementById('payment-form').classList.add('hidden');
                 document.getElementById('success-msg').classList.remove('hidden');
-            } catch (err) { alert(err.message); btn.disabled = false; btn.innerText = "Submit Verification"; }
+
+            } catch (err) {
+                alert("⚠️ Error: " + err.message);
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
         };
 
-        // LOAD LIST
+        // 2. LOAD LIST
         async function loadList() {
+            // NOTE: If RLS is enabled, this will return 0 rows or an error. RLS must be DISABLED.
             const { data, error } = await sb.from('payments').select('*').order('created_at', { ascending: false });
+            const container = document.getElementById('list-container');
             
             if (error) {
-                document.getElementById('list-container').innerHTML = 
-                    `<div class="p-4 bg-red-100 text-red-700 rounded-xl">Error: ${error.message}. <br>Please disable RLS in Supabase.</div>`;
+                container.innerHTML = `<div class="p-4 bg-red-100 text-red-700 rounded-xl">Supabase Error: ${error.message}<br><b>Please Disable RLS in Supabase Table Settings.</b></div>`;
                 return;
             }
 
-            if (!data.length) {
-                document.getElementById('list-container').innerHTML = '<p class="text-center text-gray-400 mt-10">No payments found.</p>';
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-10"><p class="text-4xl mb-2">📭</p><p>No payments found.</p><p class="text-xs mt-2 text-red-400">(If data exists, check RLS settings)</p></div>';
                 return;
             }
 
-            document.getElementById('list-container').innerHTML = data.map(p => `
+            container.innerHTML = data.map(p => `
                 <div onclick="window.location.search='?id=${p.id}'" 
-                     class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${p.status === 'verified' ? 'border-green-500' : p.status === 'rejected' ? 'border-red-500' : 'border-yellow-400'} flex justify-between items-center cursor-pointer active:scale-95 transition">
+                     class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${getStatusColor(p.status)} flex justify-between items-center cursor-pointer active:scale-95 transition-transform">
                     <div>
-                        <p class="font-bold text-gray-800">${p.full_name}</p>
-                        <p class="text-xs text-gray-500">${p.plan_amount} • ${p.status}</p>
+                        <p class="font-bold text-gray-800 text-lg">${p.full_name}</p>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">${p.plan_amount}</span>
+                            <span class="text-xs uppercase font-bold text-gray-500">${p.status}</span>
+                        </div>
                     </div>
-                    <span class="text-gray-300 font-bold text-xl">›</span>
+                    <span class="text-gray-300 font-bold text-2xl">›</span>
                 </div>
             `).join('');
         }
 
-        // LOAD DETAIL
+        // 3. LOAD DETAIL
         async function loadDetail(id) {
-            const { data } = await sb.from('payments').select('*').eq('id', id).single();
+            const { data, error } = await sb.from('payments').select('*').eq('id', id).single();
+            
+            if (error) {
+                alert("Error loading details: " + error.message);
+                return;
+            }
+
             if (data) {
                 document.getElementById('det-name').innerText = data.full_name;
                 document.getElementById('det-plan').innerText = data.plan_amount;
                 document.getElementById('det-wa').innerText = "WA: " + data.whatsapp_number;
                 
-                // Image Handling
                 const img = document.getElementById('det-img');
                 const link = document.getElementById('det-img-link');
                 img.src = data.receipt_url;
                 link.href = data.receipt_url;
                 
-                // Status Handling
                 const st = document.getElementById('det-status');
                 st.innerText = data.status;
+                
+                // Color Logic
                 if(data.status==='verified') st.className="text-xs uppercase font-bold bg-green-600 text-white px-3 py-1 rounded-full";
                 else if(data.status==='rejected') st.className="text-xs uppercase font-bold bg-red-600 text-white px-3 py-1 rounded-full";
+                else st.className="text-xs uppercase font-bold bg-yellow-400 text-black px-3 py-1 rounded-full";
             }
         }
 
-        // UPDATE STATUS
-        async function updateStatus(s) {
-            if(!confirm(`Mark as ${s}?`)) return;
+        // 4. UPDATE STATUS
+        async function updateStatus(newStatus) {
+            if(!confirm(`Mark as ${newStatus}?`)) return;
             try {
                 const params = new URLSearchParams(window.location.search);
                 const pid = params.get('id');
@@ -215,13 +274,19 @@
                 await fetch(`${BACKEND_URL}/api/verify-payment`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: pid, status: s })
+                    body: JSON.stringify({ id: pid, status: newStatus })
                 });
                 
-                alert(`Success! Marked as ${s}`);
+                alert(`Success! Marked as ${newStatus}`);
                 if(tg && tg.initData) tg.close();
                 else window.location.search = '?view=admin';
             } catch(e) { alert("Error updating status"); }
+        }
+
+        function getStatusColor(status) {
+            if (status === 'verified') return 'border-green-500';
+            if (status === 'rejected') return 'border-red-500';
+            return 'border-yellow-400';
         }
     </script>
 </body>
