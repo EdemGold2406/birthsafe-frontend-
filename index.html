@@ -42,9 +42,8 @@
                     <input type="text" id="state" placeholder="State" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
                 </div>
 
-                <!-- Contacts -->
-                <input type="tel" id="whatsapp" placeholder="WhatsApp Number" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
-                <input type="tel" id="telegram" placeholder="Telegram (Optional)" class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
+                <!-- Contacts (Telegram ONLY) -->
+                <input type="tel" id="telegram" placeholder="Telegram Number" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
                 
                 <!-- Receipt -->
                 <div class="border-2 border-dashed border-pink-200 rounded-xl p-4 text-center bg-pink-50 relative cursor-pointer">
@@ -62,7 +61,7 @@
 
             <div id="success-msg" class="hidden p-10 text-center animate-bounce">
                 <h2 class="text-3xl font-bold text-gray-800">✅ Received!</h2>
-                <p class="mt-2 text-gray-500">Check your email & WhatsApp in 24h.</p>
+                <p class="mt-2 text-gray-500">Check your email & Telegram in 24h.</p>
             </div>
         </div>
     </div>
@@ -86,7 +85,7 @@
                     <h2 id="det-name" class="text-xl font-bold text-gray-900">-</h2>
                     <p id="det-plan" class="text-birthsafe font-bold">-</p>
                     <p id="det-loc" class="text-sm text-gray-500">-</p>
-                    <p id="det-email" class="text-xs text-blue-600 underline">-</p>
+                    <p id="det-contact" class="text-sm font-bold text-blue-600">-</p>
                 </div>
                 
                 <div class="border-2 border-gray-200 rounded-xl overflow-hidden bg-gray-50">
@@ -109,7 +108,6 @@
         
         // CONFIG
         const SUPABASE_URL = 'https://qgrluobqmyzpaeblonbx.supabase.co';
-        // Use your ANON KEY here
         const SUPABASE_KEY = 'sb_publishable_V2uL6AajUGNGUfazQXj78Q_klGpJ4Ad'; 
         const BACKEND_URL = 'https://birthsafe-backend.onrender.com';
 
@@ -151,8 +149,9 @@
                     plan: document.getElementById('plan').value,
                     country: document.getElementById('country').value,
                     state: document.getElementById('state').value,
-                    whatsapp: document.getElementById('whatsapp').value,
                     telegram: document.getElementById('telegram').value,
+                    // Send N/A for whatsapp to satisfy DB constraint if it exists
+                    whatsapp: "N/A", 
                     receiptUrl: publicUrl
                 };
 
@@ -173,8 +172,8 @@
             const { data, error } = await sb.from('payments').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('list-container');
             
-            if (error || !data.length) {
-                container.innerHTML = '<p class="text-center text-gray-400 mt-10">No data found (Check RLS?).</p>';
+            if (error) {
+                container.innerHTML = `<p class="text-center text-red-500">Error: ${error.message}<br>Disable RLS!</p>`;
                 return;
             }
 
@@ -198,7 +197,7 @@
                 document.getElementById('det-name').innerText = data.full_name;
                 document.getElementById('det-plan').innerText = data.plan_amount;
                 document.getElementById('det-loc').innerText = `${data.state_province}, ${data.country}`;
-                document.getElementById('det-email').innerText = data.email;
+                document.getElementById('det-contact').innerText = "TG: " + (data.telegram_number || "N/A");
                 
                 document.getElementById('det-img').src = data.receipt_url;
                 document.getElementById('det-img-link').href = data.receipt_url;
