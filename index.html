@@ -24,33 +24,31 @@
             </div>
             
             <form id="payment-form" class="p-6 space-y-3">
-                
-                <!-- Personal Info -->
                 <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
                 <input type="email" id="email" placeholder="Email Address" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
                 
-                <!-- Plan -->
+                <!-- Updated Plans -->
                 <select id="plan" class="w-full p-3 border border-gray-200 rounded-xl bg-white outline-none">
-                    <option value="35k Plan">Standard Plan (₦35,000)</option>
-                    <option value="50k Plan">Premium Plan (₦50,000)</option>
-                    <option value="100k Plan">Exclusive Plan (₦100,000)</option>
+                    <option value="20800">Basic Plan (₦20,800)</option>
+                    <option value="25000">Standard Plan (₦25,000)</option>
+                    <option value="32000">Premium Plan (₦32,000)</option>
                 </select>
 
-                <!-- Location -->
                 <div class="flex gap-2">
                     <input type="text" id="country" placeholder="Country" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
                     <input type="text" id="state" placeholder="State" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
                 </div>
 
-                <!-- Contacts (Telegram ONLY) -->
                 <input type="tel" id="telegram" placeholder="Telegram Number" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
                 
-                <!-- Receipt -->
-                <div class="border-2 border-dashed border-pink-200 rounded-xl p-4 text-center bg-pink-50 relative cursor-pointer">
-                    <input type="file" id="receipt" accept="image/*" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                <!-- Multi-Image Upload -->
+                <div class="border-2 border-dashed border-pink-200 rounded-xl p-4 text-center bg-pink-50 relative cursor-pointer hover:bg-pink-100 transition">
+                    <input type="file" id="receipts" accept="image/*" multiple required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                     <div class="flex flex-col items-center">
                         <span class="text-2xl mb-1">📸</span>
-                        <p class="text-birthsafe font-bold text-sm">Upload Receipt</p>
+                        <p class="text-birthsafe font-bold text-sm">Upload Receipt(s)</p>
+                        <p class="text-xs text-gray-500">Select multiple if paid in batches</p>
+                        <p id="file-count" class="text-xs font-bold mt-1 text-gray-700"></p>
                     </div>
                 </div>
 
@@ -68,37 +66,48 @@
 
     <!-- === VIEW 2: ADMIN LIST === -->
     <div id="admin-list-view" class="hidden min-h-screen p-4 max-w-md mx-auto">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">📋 All Payments</h2>
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">📋 Payment Requests</h2>
         <div id="list-container" class="space-y-3 pb-20">Loading...</div>
     </div>
 
     <!-- === VIEW 3: ADMIN DETAIL === -->
     <div id="admin-detail-view" class="hidden min-h-screen p-4 flex items-center justify-center">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden relative">
             <div class="bg-gray-800 p-4 text-white flex justify-between items-center">
-                <span class="font-bold">Review</span>
+                <span class="font-bold">Review Payment</span>
                 <span id="det-status" class="text-xs uppercase font-bold bg-yellow-400 text-black px-2 py-1 rounded">Pending</span>
             </div>
             
-            <div class="p-5 space-y-3">
+            <div class="p-5 space-y-3 h-[80vh] overflow-y-auto">
                 <div class="text-center">
                     <h2 id="det-name" class="text-xl font-bold text-gray-900">-</h2>
-                    <p id="det-plan" class="text-birthsafe font-bold">-</p>
+                    <p class="text-birthsafe font-bold text-2xl">₦<span id="det-plan">-</span></p>
                     <p id="det-loc" class="text-sm text-gray-500">-</p>
                     <p id="det-contact" class="text-sm font-bold text-blue-600">-</p>
+                    <p id="det-email" class="text-xs text-gray-400 mt-1">-</p>
                 </div>
                 
-                <div class="border-2 border-gray-200 rounded-xl overflow-hidden bg-gray-50">
-                    <a id="det-img-link" target="_blank" href="#">
-                        <img id="det-img" src="" class="w-full max-h-[350px] object-contain">
-                    </a>
-                </div>
+                <!-- Image Grid -->
+                <p class="font-bold text-sm text-gray-700">Receipts:</p>
+                <div id="det-img-grid" class="grid grid-cols-2 gap-2"></div>
                 
-                <div class="flex gap-3 pt-2">
-                    <button onclick="updateStatus('verified')" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold shadow">Verify ✅</button>
-                    <button onclick="updateStatus('rejected')" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold shadow">Reject ❌</button>
+                <!-- Action Buttons -->
+                <div id="action-buttons" class="flex gap-3 pt-4 pb-8">
+                    <button onclick="updateStatus('verified')" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold shadow hover:bg-green-700">Verify ✅</button>
+                    <button onclick="showRejectModal()" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold shadow hover:bg-red-700">Reject ❌</button>
                 </div>
-                <button onclick="window.location.search='?view=admin'" class="w-full text-gray-400 text-sm py-2">Back to List</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REJECTION MODAL -->
+    <div id="reject-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6">
+            <h3 class="font-bold text-lg mb-2">Reason for Rejection</h3>
+            <textarea id="reject-reason" class="w-full border p-2 rounded-lg h-32 text-sm" placeholder="e.g., Receipt date is invalid..."></textarea>
+            <div class="flex gap-2 mt-4">
+                <button onclick="closeRejectModal()" class="flex-1 bg-gray-200 py-2 rounded-lg">Cancel</button>
+                <button onclick="submitRejection()" class="flex-1 bg-red-600 text-white py-2 rounded-lg">Confirm Reject</button>
             </div>
         </div>
     </div>
@@ -107,9 +116,9 @@
         const { createClient } = window.supabase;
         
         // CONFIG
-        const SUPABASE_URL = 'https://qgrluobqmyzpaeblonbx.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_V2uL6AajUGNGUfazQXj78Q_klGpJ4Ad'; 
-        const BACKEND_URL = 'https://birthsafe-backend.onrender.com';
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // Replace
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Replace
+        const BACKEND_URL = 'https://birthsafe-backend.onrender.com'; // Replace with your Render URL
 
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
         const tg = window.Telegram?.WebApp;
@@ -118,6 +127,11 @@
         const params = new URLSearchParams(window.location.search);
         const pid = params.get('id');
         const view = params.get('view');
+
+        // FILE COUNT UI
+        document.getElementById('receipts').addEventListener('change', function(){
+            document.getElementById('file-count').innerText = `${this.files.length} file(s) selected`;
+        });
 
         // ROUTER
         if (pid) {
@@ -134,14 +148,26 @@
         document.getElementById('payment-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            btn.innerText = "Uploading..."; btn.disabled = true;
+            btn.innerText = "Uploading Images..."; btn.disabled = true;
 
             try {
-                const file = document.getElementById('receipt').files[0];
-                const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
-                const { error: upErr } = await sb.storage.from('receipts').upload(fileName, file);
-                if (upErr) throw upErr;
-                const { data: { publicUrl } } = sb.storage.from('receipts').getPublicUrl(fileName);
+                const files = document.getElementById('receipts').files;
+                if(files.length === 0) throw new Error("Please upload at least one receipt.");
+
+                let uploadedUrls = [];
+
+                // Loop through all files
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const fileName = `${Date.now()}_${i}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+                    const { error: upErr } = await sb.storage.from('receipts').upload(fileName, file);
+                    if (upErr) throw upErr;
+                    
+                    const { data: { publicUrl } } = sb.storage.from('receipts').getPublicUrl(fileName);
+                    uploadedUrls.push(publicUrl);
+                }
+
+                btn.innerText = "Sending Data...";
 
                 const payload = {
                     fullName: document.getElementById('fullName').value,
@@ -150,9 +176,7 @@
                     country: document.getElementById('country').value,
                     state: document.getElementById('state').value,
                     telegram: document.getElementById('telegram').value,
-                    // Send N/A for whatsapp to satisfy DB constraint if it exists
-                    whatsapp: "N/A", 
-                    receiptUrl: publicUrl
+                    receiptUrls: uploadedUrls // Sending Array
                 };
 
                 const res = await fetch(`${BACKEND_URL}/api/submit-payment`, {
@@ -160,11 +184,16 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+                
                 if(!res.ok) throw new Error("Server error");
 
                 document.getElementById('payment-form').classList.add('hidden');
                 document.getElementById('success-msg').classList.remove('hidden');
-            } catch (err) { alert(err.message); btn.disabled = false; btn.innerText = "Submit Verification"; }
+            } catch (err) { 
+                alert(err.message); 
+                btn.disabled = false; 
+                btn.innerText = "Submit Verification"; 
+            }
         };
 
         // 2. LIST
@@ -173,19 +202,18 @@
             const container = document.getElementById('list-container');
             
             if (error) {
-                container.innerHTML = `<p class="text-center text-red-500">Error: ${error.message}<br>Disable RLS!</p>`;
+                container.innerHTML = `<p class="text-center text-red-500">Error loading data</p>`;
                 return;
             }
 
             container.innerHTML = data.map(p => `
                 <div onclick="window.location.search='?id=${p.id}'" 
-                     class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${p.status === 'verified' ? 'border-green-500' : p.status === 'rejected' ? 'border-red-500' : 'border-yellow-400'} flex justify-between items-center cursor-pointer">
+                     class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${p.status === 'verified' ? 'border-green-500' : p.status === 'rejected' ? 'border-red-500' : 'border-yellow-400'} flex justify-between items-center cursor-pointer hover:bg-gray-50">
                     <div>
                         <p class="font-bold text-gray-800">${p.full_name}</p>
-                        <p class="text-xs text-gray-500">${p.state_province || 'Unknown'}, ${p.country || 'Unknown'}</p>
-                        <span class="text-xs font-bold uppercase text-gray-400">${p.status}</span>
+                        <p class="text-xs text-gray-500">₦${p.plan_amount} • ${p.receipt_urls ? p.receipt_urls.length : 1} Receipt(s)</p>
                     </div>
-                    <span class="text-gray-300 font-bold text-2xl">›</span>
+                    <span class="text-xs font-bold uppercase px-2 py-1 rounded bg-gray-100">${p.status}</span>
                 </div>
             `).join('');
         }
@@ -196,33 +224,56 @@
             if (data) {
                 document.getElementById('det-name').innerText = data.full_name;
                 document.getElementById('det-plan').innerText = data.plan_amount;
+                document.getElementById('det-email').innerText = data.email;
                 document.getElementById('det-loc').innerText = `${data.state_province}, ${data.country}`;
                 document.getElementById('det-contact').innerText = "TG: " + (data.telegram_number || "N/A");
                 
-                document.getElementById('det-img').src = data.receipt_url;
-                document.getElementById('det-img-link').href = data.receipt_url;
+                // Load Images Grid
+                const grid = document.getElementById('det-img-grid');
+                grid.innerHTML = data.receipt_urls.map(url => `
+                    <a target="_blank" href="${url}" class="block border rounded-lg overflow-hidden h-32 bg-gray-100">
+                        <img src="${url}" class="w-full h-full object-cover hover:scale-105 transition">
+                    </a>
+                `).join('');
                 
                 const st = document.getElementById('det-status');
                 st.innerText = data.status;
-                if(data.status==='verified') st.className="text-xs uppercase font-bold bg-green-600 text-white px-3 py-1 rounded-full";
-                else if(data.status==='rejected') st.className="text-xs uppercase font-bold bg-red-600 text-white px-3 py-1 rounded-full";
+                if(data.status !== 'pending') {
+                    document.getElementById('action-buttons').classList.add('hidden'); // Hide buttons if already processed
+                }
             }
         }
 
-        // 4. UPDATE
-        async function updateStatus(s) {
-            if(!confirm(`Mark as ${s}? This will trigger email.`)) return;
+        // 4. UPDATE STATUS LOGIC
+        async function updateStatus(s, reason = null) {
+            const btnText = s === 'verified' ? "Verifying..." : "Rejecting...";
+            // Optional: Loading UI indication here
+            
             try {
                 const params = new URLSearchParams(window.location.search);
                 await fetch(`${BACKEND_URL}/api/verify-payment`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: params.get('id'), status: s })
+                    body: JSON.stringify({ 
+                        id: params.get('id'), 
+                        status: s,
+                        reason: reason 
+                    })
                 });
                 alert("Status Updated & Email Sent!");
                 if(tg && tg.initData) tg.close();
                 else window.location.search = '?view=admin';
-            } catch(e) { alert("Error"); }
+            } catch(e) { alert("Error updating status"); }
+        }
+
+        // REJECTION UI HELPERS
+        function showRejectModal() { document.getElementById('reject-modal').classList.remove('hidden'); }
+        function closeRejectModal() { document.getElementById('reject-modal').classList.add('hidden'); }
+        function submitRejection() {
+            const r = document.getElementById('reject-reason').value;
+            if(!r) return alert("Please write a reason.");
+            updateStatus('rejected', r);
+            closeRejectModal();
         }
     </script>
 </body>
