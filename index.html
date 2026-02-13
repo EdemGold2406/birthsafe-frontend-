@@ -27,7 +27,6 @@
                 <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
                 <input type="email" id="email" placeholder="Email Address" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
                 
-                <!-- Updated Plans -->
                 <select id="plan" class="w-full p-3 border border-gray-200 rounded-xl bg-white outline-none">
                     <option value="20800">Basic Plan (₦20,800)</option>
                     <option value="25000">Standard Plan (₦25,000)</option>
@@ -41,7 +40,6 @@
 
                 <input type="tel" id="telegram" placeholder="Telegram Number" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
                 
-                <!-- Multi-Image Upload -->
                 <div class="border-2 border-dashed border-pink-200 rounded-xl p-4 text-center bg-pink-50 relative cursor-pointer hover:bg-pink-100 transition">
                     <input type="file" id="receipts" accept="image/*" multiple required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                     <div class="flex flex-col items-center">
@@ -87,11 +85,9 @@
                     <p id="det-email" class="text-xs text-gray-400 mt-1">-</p>
                 </div>
                 
-                <!-- Image Grid -->
                 <p class="font-bold text-sm text-gray-700">Receipts:</p>
                 <div id="det-img-grid" class="grid grid-cols-2 gap-2"></div>
                 
-                <!-- Action Buttons -->
                 <div id="action-buttons" class="flex gap-3 pt-4 pb-8">
                     <button onclick="updateStatus('verified')" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold shadow hover:bg-green-700">Verify ✅</button>
                     <button onclick="showRejectModal()" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold shadow hover:bg-red-700">Reject ❌</button>
@@ -100,7 +96,6 @@
         </div>
     </div>
 
-    <!-- REJECTION MODAL -->
     <div id="reject-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl p-6">
             <h3 class="font-bold text-lg mb-2">Reason for Rejection</h3>
@@ -113,13 +108,12 @@
     </div>
 
     <script>
-        const { createClient } = window.supabase;
-        
-        // CONFIG
-        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // Replace
-        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Replace
-        const BACKEND_URL = 'https://birthsafe-backend.onrender.com'; // Replace with your Render URL
+        // CONFIGURATION
+        const SUPABASE_URL = 'https://qgrluobqmyzpaeblonbx.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_V2uL6AajUGNGUfazQXj78Q_klGpJ4Ad'; 
+        const BACKEND_URL = 'https://birthsafe-backend.onrender.com';
 
+        const { createClient } = window.supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
         const tg = window.Telegram?.WebApp;
         if(tg) tg.expand();
@@ -128,12 +122,10 @@
         const pid = params.get('id');
         const view = params.get('view');
 
-        // FILE COUNT UI
         document.getElementById('receipts').addEventListener('change', function(){
             document.getElementById('file-count').innerText = `${this.files.length} file(s) selected`;
         });
 
-        // ROUTER
         if (pid) {
             document.getElementById('admin-detail-view').classList.remove('hidden');
             loadDetail(pid);
@@ -144,137 +136,18 @@
             document.getElementById('customer-view').classList.remove('hidden');
         }
 
-        // 1. SUBMIT
         document.getElementById('payment-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            btn.innerText = "Uploading Images..."; btn.disabled = true;
+            btn.innerText = "Uploading..."; btn.disabled = true;
 
             try {
                 const files = document.getElementById('receipts').files;
-                if(files.length === 0) throw new Error("Please upload at least one receipt.");
-
                 let uploadedUrls = [];
 
-                // Loop through all files
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     const fileName = `${Date.now()}_${i}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
                     const { error: upErr } = await sb.storage.from('receipts').upload(fileName, file);
                     if (upErr) throw upErr;
-                    
-                    const { data: { publicUrl } } = sb.storage.from('receipts').getPublicUrl(fileName);
-                    uploadedUrls.push(publicUrl);
-                }
-
-                btn.innerText = "Sending Data...";
-
-                const payload = {
-                    fullName: document.getElementById('fullName').value,
-                    email: document.getElementById('email').value,
-                    plan: document.getElementById('plan').value,
-                    country: document.getElementById('country').value,
-                    state: document.getElementById('state').value,
-                    telegram: document.getElementById('telegram').value,
-                    receiptUrls: uploadedUrls // Sending Array
-                };
-
-                const res = await fetch(`${BACKEND_URL}/api/submit-payment`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if(!res.ok) throw new Error("Server error");
-
-                document.getElementById('payment-form').classList.add('hidden');
-                document.getElementById('success-msg').classList.remove('hidden');
-            } catch (err) { 
-                alert(err.message); 
-                btn.disabled = false; 
-                btn.innerText = "Submit Verification"; 
-            }
-        };
-
-        // 2. LIST
-        async function loadList() {
-            const { data, error } = await sb.from('payments').select('*').order('created_at', { ascending: false });
-            const container = document.getElementById('list-container');
-            
-            if (error) {
-                container.innerHTML = `<p class="text-center text-red-500">Error loading data</p>`;
-                return;
-            }
-
-            container.innerHTML = data.map(p => `
-                <div onclick="window.location.search='?id=${p.id}'" 
-                     class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${p.status === 'verified' ? 'border-green-500' : p.status === 'rejected' ? 'border-red-500' : 'border-yellow-400'} flex justify-between items-center cursor-pointer hover:bg-gray-50">
-                    <div>
-                        <p class="font-bold text-gray-800">${p.full_name}</p>
-                        <p class="text-xs text-gray-500">₦${p.plan_amount} • ${p.receipt_urls ? p.receipt_urls.length : 1} Receipt(s)</p>
-                    </div>
-                    <span class="text-xs font-bold uppercase px-2 py-1 rounded bg-gray-100">${p.status}</span>
-                </div>
-            `).join('');
-        }
-
-        // 3. DETAIL
-        async function loadDetail(id) {
-            const { data } = await sb.from('payments').select('*').eq('id', id).single();
-            if (data) {
-                document.getElementById('det-name').innerText = data.full_name;
-                document.getElementById('det-plan').innerText = data.plan_amount;
-                document.getElementById('det-email').innerText = data.email;
-                document.getElementById('det-loc').innerText = `${data.state_province}, ${data.country}`;
-                document.getElementById('det-contact').innerText = "TG: " + (data.telegram_number || "N/A");
-                
-                // Load Images Grid
-                const grid = document.getElementById('det-img-grid');
-                grid.innerHTML = data.receipt_urls.map(url => `
-                    <a target="_blank" href="${url}" class="block border rounded-lg overflow-hidden h-32 bg-gray-100">
-                        <img src="${url}" class="w-full h-full object-cover hover:scale-105 transition">
-                    </a>
-                `).join('');
-                
-                const st = document.getElementById('det-status');
-                st.innerText = data.status;
-                if(data.status !== 'pending') {
-                    document.getElementById('action-buttons').classList.add('hidden'); // Hide buttons if already processed
-                }
-            }
-        }
-
-        // 4. UPDATE STATUS LOGIC
-        async function updateStatus(s, reason = null) {
-            const btnText = s === 'verified' ? "Verifying..." : "Rejecting...";
-            // Optional: Loading UI indication here
-            
-            try {
-                const params = new URLSearchParams(window.location.search);
-                await fetch(`${BACKEND_URL}/api/verify-payment`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        id: params.get('id'), 
-                        status: s,
-                        reason: reason 
-                    })
-                });
-                alert("Status Updated & Email Sent!");
-                if(tg && tg.initData) tg.close();
-                else window.location.search = '?view=admin';
-            } catch(e) { alert("Error updating status"); }
-        }
-
-        // REJECTION UI HELPERS
-        function showRejectModal() { document.getElementById('reject-modal').classList.remove('hidden'); }
-        function closeRejectModal() { document.getElementById('reject-modal').classList.add('hidden'); }
-        function submitRejection() {
-            const r = document.getElementById('reject-reason').value;
-            if(!r) return alert("Please write a reason.");
-            updateStatus('rejected', r);
-            closeRejectModal();
-        }
-    </script>
-</body>
-</html>
+                    const { data: { pub
