@@ -4,150 +4,131 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BirthSafe NG Portal</title>
-    
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
     <style type="text/tailwindcss">
         @theme { --color-birthsafe: #db2777; --color-birthsafe-light: #fdf2f8; }
     </style>
 </head>
 <body class="bg-birthsafe-light antialiased font-sans text-gray-900">
 
-    <!-- === VIEW 1: CUSTOMER FORM === -->
     <div id="customer-view" class="hidden min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-pink-100">
-            <div class="bg-birthsafe p-6 text-center text-white">
-                <h1 class="text-2xl font-bold">BirthSafe NG</h1>
-                <p class="text-pink-100 text-sm mt-1">Payment Verification Portal</p>
-            </div>
-            
-            <form id="payment-form" class="p-6 space-y-3">
-                <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
-                <input type="email" id="email" placeholder="Email Address" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
-                
-                <select id="plan" class="w-full p-3 border border-gray-200 rounded-xl bg-white outline-none">
-                    <option value="20800">Basic Plan (₦20,800)</option>
-                    <option value="25000">Standard Plan (₦25,000)</option>
-                    <option value="32000">Premium Plan (₦32,000)</option>
+        <!-- ... (Keep your existing customer form HTML here) ... -->
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6">
+            <h1 class="text-2xl font-bold text-birthsafe text-center">BirthSafe NG</h1>
+            <form id="payment-form" class="space-y-4 mt-4">
+                <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-3 border rounded-xl">
+                <input type="email" id="email" placeholder="Email" required class="w-full p-3 border rounded-xl">
+                <select id="plan" class="w-full p-3 border rounded-xl">
+                    <option value="20800">Basic (₦20,800)</option>
+                    <option value="25000">Standard (₦25,000)</option>
+                    <option value="32000">Premium (₦32,000)</option>
                 </select>
-
-                <div class="flex gap-2">
-                    <input type="text" id="country" placeholder="Country" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
-                    <input type="text" id="state" placeholder="State" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
-                </div>
-
-                <input type="tel" id="telegram" placeholder="Telegram Number" required class="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
-                
-                <div class="border-2 border-dashed border-pink-200 rounded-xl p-4 text-center bg-pink-50 relative cursor-pointer hover:bg-pink-100 transition">
-                    <input type="file" id="receipts" accept="image/*" multiple required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                    <div class="flex flex-col items-center">
-                        <span class="text-2xl mb-1">📸</span>
-                        <p class="text-birthsafe font-bold text-sm">Upload Receipt(s)</p>
-                        <p class="text-xs text-gray-500">Select multiple if paid in batches</p>
-                        <p id="file-count" class="text-xs font-bold mt-1 text-gray-700"></p>
-                    </div>
-                </div>
-
-                <button type="submit" id="submit-btn" class="w-full bg-birthsafe text-white py-3 rounded-xl font-bold shadow-lg hover:bg-pink-700">
-                    Submit Verification
-                </button>
+                <input type="file" id="receipts" multiple required class="w-full">
+                <button type="submit" id="submit-btn" class="w-full bg-birthsafe text-white py-3 rounded-xl font-bold">Submit</button>
             </form>
-
-            <div id="success-msg" class="hidden p-10 text-center animate-bounce">
-                <h2 class="text-3xl font-bold text-gray-800">✅ Received!</h2>
-                <p class="mt-2 text-gray-500">Check your email & Telegram in 24h.</p>
-            </div>
         </div>
     </div>
 
-    <!-- === VIEW 2: ADMIN LIST === -->
-    <div id="admin-list-view" class="hidden min-h-screen p-4 max-w-md mx-auto">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">📋 Payment Requests</h2>
-        <div id="list-container" class="space-y-3 pb-20">Loading...</div>
+    <div id="admin-list-view" class="hidden min-h-screen p-4">
+        <h2 class="text-2xl font-bold mb-4">📋 Payment Requests</h2>
+        <div id="list-container" class="space-y-3"></div>
     </div>
 
-    <!-- === VIEW 3: ADMIN DETAIL === -->
-    <div id="admin-detail-view" class="hidden min-h-screen p-4 flex items-center justify-center">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden relative">
-            <div class="bg-gray-800 p-4 text-white flex justify-between items-center">
-                <span class="font-bold">Review Payment</span>
-                <span id="det-status" class="text-xs uppercase font-bold bg-yellow-400 text-black px-2 py-1 rounded">Pending</span>
-            </div>
-            
-            <div class="p-5 space-y-3 h-[80vh] overflow-y-auto">
-                <div class="text-center">
-                    <h2 id="det-name" class="text-xl font-bold text-gray-900">-</h2>
-                    <p class="text-birthsafe font-bold text-2xl">₦<span id="det-plan">-</span></p>
-                    <p id="det-loc" class="text-sm text-gray-500">-</p>
-                    <p id="det-contact" class="text-sm font-bold text-blue-600">-</p>
-                    <p id="det-email" class="text-xs text-gray-400 mt-1">-</p>
-                </div>
-                
-                <p class="font-bold text-sm text-gray-700">Receipts:</p>
-                <div id="det-img-grid" class="grid grid-cols-2 gap-2"></div>
-                
-                <div id="action-buttons" class="flex gap-3 pt-4 pb-8">
-                    <button onclick="updateStatus('verified')" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold shadow hover:bg-green-700">Verify ✅</button>
-                    <button onclick="showRejectModal()" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold shadow hover:bg-red-700">Reject ❌</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="reject-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6">
-            <h3 class="font-bold text-lg mb-2">Reason for Rejection</h3>
-            <textarea id="reject-reason" class="w-full border p-2 rounded-lg h-32 text-sm" placeholder="e.g., Receipt date is invalid..."></textarea>
-            <div class="flex gap-2 mt-4">
-                <button onclick="closeRejectModal()" class="flex-1 bg-gray-200 py-2 rounded-lg">Cancel</button>
-                <button onclick="submitRejection()" class="flex-1 bg-red-600 text-white py-2 rounded-lg">Confirm Reject</button>
+    <div id="admin-detail-view" class="hidden min-h-screen p-4 flex flex-col items-center">
+        <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md">
+            <h2 id="det-name" class="text-xl font-bold"></h2>
+            <div id="det-img-grid" class="grid grid-cols-2 gap-2 my-4"></div>
+            <div id="action-buttons" class="flex gap-2">
+                <button onclick="updateStatus('verified')" class="bg-green-600 text-white p-3 rounded-xl flex-1">Verify</button>
+                <button onclick="showRejectModal()" class="bg-red-600 text-white p-3 rounded-xl flex-1">Reject</button>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURATION
-        const SUPABASE_URL = 'https://qgrluobqmyzpaeblonbx.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_V2uL6AajUGNGUfazQXj78Q_klGpJ4Ad'; 
+        const SUPABASE_URL = 'https://qgrluobqmyzpaeblonbx.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_V2uL6AajUGNGUfazQXj78Q_klGpJ4Ad';
         const BACKEND_URL = 'https://birthsafe-backend.onrender.com';
 
         const { createClient } = window.supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-        const tg = window.Telegram?.WebApp;
-        if(tg) tg.expand();
 
-        const params = new URLSearchParams(window.location.search);
-        const pid = params.get('id');
-        const view = params.get('view');
+        // ROUTER LOGIC - Wrapped in window.onload to prevent blank screen
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            const pid = params.get('id');
+            const view = params.get('view');
 
-        document.getElementById('receipts').addEventListener('change', function(){
-            document.getElementById('file-count').innerText = `${this.files.length} file(s) selected`;
-        });
+            if (pid) {
+                document.getElementById('admin-detail-view').classList.remove('hidden');
+                loadDetail(pid);
+            } else if (view === 'admin') {
+                document.getElementById('admin-list-view').classList.remove('hidden');
+                loadList();
+            } else {
+                document.getElementById('customer-view').classList.remove('hidden');
+            }
+        };
 
-        if (pid) {
-            document.getElementById('admin-detail-view').classList.remove('hidden');
-            loadDetail(pid);
-        } else if (view === 'admin') {
-            document.getElementById('admin-list-view').classList.remove('hidden');
-            loadList();
-        } else {
-            document.getElementById('customer-view').classList.remove('hidden');
+        async function loadList() {
+            const { data } = await sb.from('payments').select('*').order('created_at', { ascending: false });
+            document.getElementById('list-container').innerHTML = data.map(p => `
+                <div onclick="window.location.search='?id=${p.id}'" class="bg-white p-4 rounded-xl shadow cursor-pointer">
+                    <b>${p.full_name}</b> - ₦${p.plan_amount} (${p.status})
+                </div>
+            `).join('');
         }
 
+        async function loadDetail(id) {
+            const { data } = await sb.from('payments').select('*').eq('id', id).single();
+            document.getElementById('det-name').innerText = data.full_name;
+            document.getElementById('det-img-grid').innerHTML = data.receipt_urls.map(url => `
+                <img src="${url}" class="rounded-lg h-32 w-full object-cover">
+            `).join('');
+        }
+
+        async function updateStatus(s) {
+            const pid = new URLSearchParams(window.location.search).get('id');
+            await fetch(`${BACKEND_URL}/api/verify-payment`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: pid, status: s })
+            });
+            alert("Updated!");
+            window.location.search = "?view=admin";
+        }
+
+        // Form Submit Logic
         document.getElementById('payment-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
-            btn.innerText = "Uploading..."; btn.disabled = true;
+            btn.disabled = true; btn.innerText = "Processing...";
 
             try {
                 const files = document.getElementById('receipts').files;
                 let uploadedUrls = [];
+                for (let file of files) {
+                    const name = `${Date.now()}_${file.name}`;
+                    await sb.storage.from('receipts').upload(name, file);
+                    const { data: { publicUrl } } = sb.storage.from('receipts').getPublicUrl(name);
+                    uploadedUrls.push(publicUrl);
+                }
 
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    const fileName = `${Date.now()}_${i}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
-                    const { error: upErr } = await sb.storage.from('receipts').upload(fileName, file);
-                    if (upErr) throw upErr;
-                    const { data: { pub
+                await fetch(`${BACKEND_URL}/api/submit-payment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName: document.getElementById('fullName').value,
+                        email: document.getElementById('email').value,
+                        plan: document.getElementById('plan').value,
+                        receiptUrls: uploadedUrls
+                    })
+                });
+                alert("Submitted!");
+                location.reload();
+            } catch (err) { alert("Error"); btn.disabled = false; }
+        };
+    </script>
+</body>
+</html>
