@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BirthSafe NG Portal</title>
     
-    <!-- Load Tailwind, Supabase, and Telegram CSS/JS -->
+    <!-- Load Tailwind and Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -39,7 +39,7 @@
                 </select>
 
                 <label class="text-xs font-bold text-gray-500 uppercase">Contact & Location</label>
-                <input type="tel" id="telegramNumber" placeholder="Telegram Number (e.g. 080123...)" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
+                <input type="tel" id="telegramNumber" placeholder="Telegram Number" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
                 
                 <div class="flex gap-2">
                     <input type="text" id="country" placeholder="Country" required class="w-full p-3 border rounded-xl outline-none">
@@ -50,7 +50,7 @@
                 <div class="border-2 border-dashed border-pink-200 rounded-xl p-4 text-center bg-pink-50 relative cursor-pointer">
                     <input type="file" id="receipts" accept="image/*" multiple required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                     <p class="text-birthsafe font-bold text-sm">📸 Upload Receipt(s)</p>
-                    <p id="file-count" class="text-xs mt-1 text-gray-500">You can select multiple images if you paid in batches</p>
+                    <p id="file-count" class="text-xs mt-1 text-gray-500">Multiple images allowed</p>
                 </div>
 
                 <button type="submit" id="submit-btn" class="w-full bg-birthsafe text-white py-3 rounded-xl font-bold shadow-lg hover:bg-pink-700 transition">
@@ -58,9 +58,12 @@
                 </button>
             </form>
 
+            <!-- Personalized Success Message -->
             <div id="success-msg" class="hidden p-10 text-center animate-pulse">
                 <h2 class="text-3xl font-bold text-gray-800">✅ Received!</h2>
-                <p class="mt-2 text-gray-600 font-medium">Mamas, we have received your payment. Check your email in 24h for onboarding!</p>
+                <p class="mt-2 text-gray-600 font-medium">
+                    <span id="user-first-name" class="capitalize">Mama</span>, we have received your payment. Check your email in 24h for onboarding!
+                </p>
             </div>
         </div>
     </div>
@@ -90,8 +93,9 @@
             <div id="det-img-grid" class="grid grid-cols-2 gap-2 my-2"></div>
             
             <div class="flex gap-2" id="action-buttons">
-                <button onclick="updateStatus('verified')" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold shadow hover:bg-green-700">Verify ✅</button>
-                <button onclick="updateStatus('rejected', prompt('Enter reason for rejection:'))" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold shadow hover:bg-red-700">Reject ❌</button>
+                <!-- Using (event) to handle button feedback -->
+                <button onclick="updateStatus('verified', null, event)" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold shadow hover:bg-green-700">Verify ✅</button>
+                <button onclick="updateStatus('rejected', prompt('Enter reason for rejection:'), event)" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold shadow hover:bg-red-700">Reject ❌</button>
             </div>
             
             <button onclick="location.search='?view=admin'" class="w-full text-gray-400 text-sm hover:underline">← Back to List</button>
@@ -99,14 +103,13 @@
     </div>
 
     <script>
-        // --- CONFIGURATION ---
+        // --- CONFIG ---
         const SUPABASE_URL = 'https://qgrluobqmyzpaeblonbx.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_V2uL6AajUGNGUfazQXj78Q_klGpJ4Ad'; 
         const BACKEND_URL = 'https://birthsafe-backend.onrender.com';
 
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- ROUTER LOGIC ---
         window.onload = () => {
             const params = new URLSearchParams(window.location.search);
             const pid = params.get('id');
@@ -123,7 +126,6 @@
             }
         };
 
-        // File Selection UI update
         document.getElementById('receipts').onchange = (e) => {
             document.getElementById('file-count').innerText = `${e.target.files.length} image(s) selected`;
         };
@@ -132,26 +134,26 @@
         document.getElementById('payment-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
+            const fullName = document.getElementById('fullName').value;
+            const firstName = fullName.trim().split(' ')[0]; // Extract first name
+            
             btn.innerText = "Processing..."; btn.disabled = true;
 
             try {
                 const files = document.getElementById('receipts').files;
                 let urls = [];
 
-                // 1. Upload each image to Supabase Storage
                 for (let file of files) {
                     const path = `receipts/${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-                    const { data, error: uploadError } = await sb.storage.from('receipts').upload(path, file);
-                    
+                    const { error: uploadError } = await sb.storage.from('receipts').upload(path, file);
                     if (uploadError) throw new Error("Image Upload Error: " + uploadError.message);
                     
                     const { data: urlData } = sb.storage.from('receipts').getPublicUrl(path);
                     urls.push(urlData.publicUrl);
                 }
 
-                // 2. Build Payload
                 const payload = {
-                    fullName: document.getElementById('fullName').value,
+                    fullName: fullName,
                     email: document.getElementById('email').value,
                     plan: document.getElementById('plan').value,
                     telegramNumber: document.getElementById('telegramNumber').value,
@@ -160,25 +162,20 @@
                     receiptUrls: urls
                 };
 
-                // 3. Send to Backend
                 const res = await fetch(`${BACKEND_URL}/api/submit-payment`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(payload)
                 });
                 
-                const result = await res.json();
+                if (!res.ok) throw new Error("Server failed to process data.");
 
-                if (!res.ok) {
-                    throw new Error(result.error || "The server encountered an error processing your data.");
-                }
-
-                // 4. Success UI
+                // Personalize UI
+                document.getElementById('user-first-name').innerText = firstName;
                 document.getElementById('payment-form').classList.add('hidden');
                 document.getElementById('success-msg').classList.remove('hidden');
 
             } catch (err) { 
-                console.error("Submission Error:", err);
                 alert("Submission Failed: " + err.message); 
                 btn.disabled = false; 
                 btn.innerText = "Submit Verification"; 
@@ -187,63 +184,56 @@
 
         // --- ADMIN: LOAD LIST ---
         async function loadList() {
-            try {
-                const { data, error } = await sb.from('payments').select('*').order('created_at', {ascending: false});
-                if (error) throw error;
+            const { data, error } = await sb.from('payments').select('*').order('created_at', {ascending: false});
+            if (error) return alert("Load Error: " + error.message);
 
-                const container = document.getElementById('list-container');
-                container.innerHTML = data.length ? data.map(p => `
-                    <div onclick="location.search='?id=${p.id}'" class="bg-white p-4 rounded-xl shadow border-l-4 ${p.status === 'verified' ? 'border-green-500' : p.status === 'rejected' ? 'border-red-500' : 'border-yellow-400'} cursor-pointer hover:bg-pink-50 transition">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <b class="text-gray-800">${p.full_name}</b>
-                                <p class="text-xs text-gray-500">₦${p.plan_amount} • ${p.telegram_number || 'No Number'}</p>
-                            </div>
-                            <span class="text-[10px] font-bold uppercase bg-white border px-2 py-1 rounded shadow-sm">${p.status}</span>
+            const container = document.getElementById('list-container');
+            container.innerHTML = data.length ? data.map(p => `
+                <div onclick="location.search='?id=${p.id}'" class="bg-white p-4 rounded-xl shadow border-l-4 ${p.status === 'verified' ? 'border-green-500' : p.status === 'rejected' ? 'border-red-500' : 'border-yellow-400'} cursor-pointer hover:bg-pink-50 transition">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <b class="text-gray-800">${p.full_name}</b>
+                            <p class="text-xs text-gray-500">₦${p.plan_amount} • ${p.telegram_number || 'No TG'}</p>
                         </div>
+                        <span class="text-[10px] font-bold uppercase bg-white border px-2 py-1 rounded shadow-sm">${p.status}</span>
                     </div>
-                `).join('') : '<p class="text-center text-gray-500 py-10">No payment requests found yet.</p>';
-            } catch (err) {
-                alert("Load List Error: " + err.message);
-            }
+                </div>
+            `).join('') : '<p class="text-center py-10">No requests yet.</p>';
         }
 
         // --- ADMIN: LOAD DETAIL ---
         async function loadDetail(id) {
-            try {
-                const { data, error } = await sb.from('payments').select('*').eq('id', id).single();
-                if (error || !data) throw new Error("Could not find this record.");
+            const { data, error } = await sb.from('payments').select('*').eq('id', id).single();
+            if (error) return;
 
-                document.getElementById('det-name').innerText = data.full_name;
-                document.getElementById('det-plan').innerText = data.plan_amount;
-                document.getElementById('det-tg').innerText = data.telegram_number || 'N/A';
-                document.getElementById('det-email').innerText = data.email;
-                document.getElementById('det-loc').innerText = `${data.state_province || ''}, ${data.country || ''}`;
+            document.getElementById('det-name').innerText = data.full_name;
+            document.getElementById('det-plan').innerText = data.plan_amount;
+            document.getElementById('det-tg').innerText = data.telegram_number || 'N/A';
+            document.getElementById('det-email').innerText = data.email;
+            document.getElementById('det-loc').innerText = `${data.state_province || ''}, ${data.country || ''}`;
 
-                const grid = document.getElementById('det-img-grid');
-                grid.innerHTML = (data.receipt_urls || []).map(url => `
-                    <a href="${url}" target="_blank">
-                        <img src="${url}" class="rounded-lg h-32 w-full object-cover border hover:opacity-80 transition">
-                    </a>
-                `).join('');
+            document.getElementById('det-img-grid').innerHTML = (data.receipt_urls || []).map(url => `
+                <a href="${url}" target="_blank"><img src="${url}" class="rounded-lg h-32 w-full object-cover border"></a>
+            `).join('');
 
-                if(data.status !== 'pending') {
-                    document.getElementById('action-buttons').innerHTML = `
-                        <div class="w-full text-center py-2 bg-gray-100 rounded-xl font-bold text-gray-500 uppercase">
-                            Already processed as: ${data.status}
-                        </div>
-                    `;
-                }
-            } catch (err) {
-                alert("Load Detail Error: " + err.message);
-                location.search = '?view=admin';
+            if(data.status !== 'pending') {
+                document.getElementById('action-buttons').innerHTML = `
+                    <div class="w-full text-center py-2 bg-gray-100 rounded-xl font-bold text-gray-500 uppercase">
+                        Processed as: ${data.status}
+                    </div>`;
             }
         }
 
-        // --- ADMIN: VERIFY/REJECT ---
-        async function updateStatus(s, r) {
-            if (s === 'rejected' && r === null) return; // Prompt cancelled
-            if (s === 'rejected' && r.trim() === "") return alert("Please provide a reason for rejection.");
+        // --- ADMIN: UPDATE STATUS (VERIFY/REJECT) ---
+        async function updateStatus(s, r, event) {
+            if (s === 'rejected' && r === null) return;
+            if (s === 'rejected' && r.trim() === "") return alert("Reason required.");
+
+            // Feedback: Change button appearance
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "Processing...";
+            btn.disabled = true;
 
             try {
                 const id = new URLSearchParams(location.search).get('id');
@@ -254,14 +244,15 @@
                 });
 
                 if (res.ok) {
-                    alert(`Payment marked as ${s.toUpperCase()}!`);
+                    alert(`SUCCESS: Payment marked as ${s.toUpperCase()}!`);
                     location.search = '?view=admin';
                 } else {
-                    const errorData = await res.json();
-                    throw new Error(errorData.error || "Update failed.");
+                    throw new Error("Backend update failed.");
                 }
             } catch (err) {
-                alert("Status Update Error: " + err.message);
+                alert("Error: " + err.message);
+                btn.innerText = originalText;
+                btn.disabled = false;
             }
         }
     </script>
