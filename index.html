@@ -11,123 +11,162 @@
     
     <style type="text/tailwindcss">
         @theme { 
-            --color-birthsafe: #db2777; 
-            --color-birthsafe-light: #fdf2f8; 
+            --color-bs-blue: #72c7e8; 
+            --color-bs-purple: #8b1e8b;
+            --color-bs-bg: #f8fafc; 
         }
+        .logo-shadow {
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
+        }
+        /* Custom scrollbar for filter tabs */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-birthsafe-light antialiased font-sans text-gray-900">
+<body class="bg-bs-bg antialiased font-sans text-slate-800">
 
     <!-- === VIEW 1: CUSTOMER SUBMISSION FORM === -->
-    <div id="customer-view" class="hidden min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-pink-100">
-            <div class="bg-birthsafe p-6 text-center text-white">
-                <h1 class="text-2xl font-bold">BirthSafe NG</h1>
-                <p class="text-pink-100 text-sm mt-1">Payment Verification Portal</p>
+    <div id="customer-view" class="hidden min-h-screen flex flex-col items-center justify-center p-4">
+        <div class="mb-6 text-center">
+            <!-- UPDATED LOGO PATH -->
+            <img src="logo.jpg" alt="BirthSafe Logo" class="h-24 mx-auto logo-shadow mb-2 rounded-2xl">
+            <p class="text-bs-purple font-medium italic text-sm tracking-wide">Birth safe. birth alive</p>
+        </div>
+
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+            <div class="bg-bs-blue p-6 text-center text-white">
+                <h1 class="text-2xl font-bold tracking-tight">Payment Verification</h1>
+                <p class="text-sky-50 text-sm mt-1 opacity-90">Securely upload your payment evidence</p>
             </div>
             
-            <form id="payment-form" class="p-6 space-y-3">
-                <label class="text-xs font-bold text-gray-500 uppercase">Personal Details</label>
-                <input type="text" id="fullName" placeholder="Full Name" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
-                <input type="email" id="email" placeholder="Email Address" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
-                
-                <label class="text-xs font-bold text-gray-500 uppercase">Select Your Package</label>
-                <!-- UPDATED PACKAGE NAMES AND PRICES -->
-                <select id="plan" class="w-full p-3 border rounded-xl bg-white outline-none focus:ring-2 focus:ring-birthsafe">
-                    <option value="20800">Partial Package (₦20,800)</option>
-                    <option value="25500">Standard Package (₦25,500)</option>
-                    <option value="32000">Pregnancy Safeguarding Package (₦32,000)</option>
-                </select>
-
-                <label class="text-xs font-bold text-gray-500 uppercase">Contact & Location</label>
-                <input type="tel" id="telegramNumber" placeholder="Telegram Number" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
-                
-                <div class="flex gap-2">
-                    <input type="text" id="country" placeholder="Country" required class="w-full p-3 border rounded-xl outline-none">
-                    <input type="text" id="state" placeholder="State" required class="w-full p-3 border rounded-xl outline-none">
+            <form id="payment-form" class="p-6 space-y-4">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                    <input type="text" id="fullName" placeholder="Enter your full name" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-bs-blue transition-all">
                 </div>
 
-                <label class="text-xs font-bold text-gray-500 uppercase">Payment Evidence</label>
-                <div class="border-2 border-dashed border-pink-200 rounded-xl p-4 text-center bg-pink-50 relative cursor-pointer">
-                    <input type="file" id="receipts" accept="image/*" multiple required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                    <p class="text-birthsafe font-bold text-sm">📸 Upload Receipt(s)</p>
-                    <p id="file-count" class="text-xs mt-1 text-gray-500">Multiple images allowed</p>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                    <input type="email" id="email" placeholder="mama@example.com" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-bs-blue transition-all">
+                </div>
+                
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Select Your Package</label>
+                    <select id="plan" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-bs-blue transition-all cursor-pointer">
+                        <option value="20800">Partial Package (₦20,800)</option>
+                        <option value="25500">Standard Package (₦25,500)</option>
+                        <option value="32000">Pregnancy Safeguarding Package (₦32,000)</option>
+                    </select>
                 </div>
 
-                <button type="submit" id="submit-btn" class="w-full bg-birthsafe text-white py-3 rounded-xl font-bold shadow-lg hover:bg-pink-700 transition">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Telegram Number</label>
+                    <input type="tel" id="telegramNumber" placeholder="e.g. 08012345678" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-bs-blue transition-all">
+                </div>
+                
+                <div class="flex gap-3">
+                    <div class="flex-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Country</label>
+                        <input type="text" id="country" placeholder="Nigeria" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-bs-blue transition-all">
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">State</label>
+                        <input type="text" id="state" placeholder="Lagos" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-bs-blue transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Payment Evidence</label>
+                    <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center bg-slate-50 relative cursor-pointer hover:border-bs-blue transition-colors">
+                        <input type="file" id="receipts" accept="image/*" multiple required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div class="flex flex-col items-center">
+                            <span class="text-2xl mb-1">📁</span>
+                            <p class="text-bs-blue font-bold text-sm">Upload Receipt(s)</p>
+                            <p id="file-count" class="text-[10px] text-slate-400 mt-1 uppercase">Select one or more images</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-btn" class="w-full bg-bs-purple text-white py-4 rounded-xl font-bold shadow-lg shadow-purple-100 hover:bg-bs-purple/90 transition-all transform active:scale-[0.98]">
                     Submit Verification
                 </button>
             </form>
 
-            <div id="success-msg" class="hidden p-10 text-center animate-pulse">
-                <h2 class="text-3xl font-bold text-gray-800">✅ Received!</h2>
-                <p class="mt-2 text-gray-600 font-medium">
-                    <span id="user-first-name" class="capitalize">Mama</span>, we have received your payment. Check your email in 24h for onboarding!
+            <div id="success-msg" class="hidden p-12 text-center">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">✓</div>
+                <h2 class="text-3xl font-bold text-slate-800">Received!</h2>
+                <p class="mt-4 text-slate-500 leading-relaxed">
+                    <span id="user-first-name" class="capitalize font-bold text-bs-blue">Mama</span>, we have received your payment. 
+                    <br><br>
+                    Please check your email in <span class="font-bold text-slate-800">24h</span> for your onboarding details!
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- === VIEW 2: ADMIN LIST VIEW (With Search) === -->
-    <div id="admin-list-view" class="hidden min-h-screen p-4 max-w-md mx-auto">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold text-gray-800">📋 Dashboard</h2>
-            <button onclick="location.reload()" class="text-xs bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">Refresh</button>
+    <!-- === VIEW 2: ADMIN DASHBOARD === -->
+    <div id="admin-list-view" class="hidden min-h-screen p-6 max-w-xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-3xl font-black text-slate-800 tracking-tight">Admin Portal</h2>
+                <p class="text-slate-400 text-sm font-medium">Verify mama's payments</p>
+            </div>
+            <button onclick="location.reload()" class="p-3 bg-white border border-slate-200 rounded-2xl shadow-sm hover:bg-slate-50 transition-colors">🔄</button>
         </div>
 
-        <!-- SEARCH BAR -->
-        <div class="mb-4">
-            <input type="text" id="searchInput" placeholder="🔍 Search name, email, or status..." 
-                   class="w-full p-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe shadow-sm">
+        <!-- SEARCH -->
+        <div class="relative mb-6">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search by name, email, or telegram..." 
+                   class="w-full p-4 pl-12 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-bs-blue/10 focus:border-bs-blue transition-all shadow-sm">
         </div>
 
-        <!-- FILTER TABS -->
-        <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
-            <button onclick="filterList('all')" class="px-4 py-1.5 bg-gray-800 text-white rounded-full text-xs font-bold whitespace-nowrap">All</button>
-            <button onclick="filterList('pending')" class="px-4 py-1.5 bg-yellow-500 text-white rounded-full text-xs font-bold whitespace-nowrap">Pending</button>
-            <button onclick="filterList('verified')" class="px-4 py-1.5 bg-green-600 text-white rounded-full text-xs font-bold whitespace-nowrap">Verified</button>
-            <button onclick="filterList('rejected')" class="px-4 py-1.5 bg-red-600 text-white rounded-full text-xs font-bold whitespace-nowrap">Rejected</button>
+        <!-- FILTERS -->
+        <div class="flex gap-2 mb-8 overflow-x-auto no-scrollbar pb-2">
+            <button onclick="filterList('all')" class="px-5 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold whitespace-nowrap shadow-md">All</button>
+            <button onclick="filterList('pending')" class="px-5 py-2 bg-amber-500 text-white rounded-xl text-xs font-bold whitespace-nowrap shadow-md">Pending</button>
+            <button onclick="filterList('verified')" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold whitespace-nowrap shadow-md">Verified</button>
+            <button onclick="filterList('rejected')" class="px-5 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold whitespace-nowrap shadow-md">Rejected</button>
         </div>
 
-        <div id="list-container" class="space-y-3 pb-20">Loading payments...</div>
+        <div id="list-container" class="space-y-4 pb-20">Loading payments...</div>
     </div>
 
-    <!-- === VIEW 3: ADMIN DETAIL REVIEW === -->
+    <!-- === VIEW 3: DETAIL VIEW === -->
     <div id="admin-detail-view" class="hidden min-h-screen p-4 flex items-center justify-center">
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-5 space-y-4">
-            <h2 id="det-name" class="text-xl font-bold text-center text-gray-800"></h2>
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 border border-slate-100">
+            <div class="flex justify-between items-start mb-6 border-b border-slate-50 pb-4">
+                <button onclick="location.search='?view=admin'" class="text-slate-400 hover:text-bs-blue font-bold">← Back</button>
+                <div class="text-right">
+                    <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Detail View</span>
+                    <h2 id="det-name" class="text-xl font-bold text-slate-800"></h2>
+                </div>
+            </div>
             
-            <div class="bg-pink-50 p-3 rounded-xl text-sm space-y-1">
-                <p>💰 <b>Plan:</b> ₦<span id="det-plan"></span></p>
-                <p>✈️ <b>Telegram:</b> <span id="det-tg" class="text-blue-600 font-bold"></span></p>
-                <p>📧 <b>Email:</b> <span id="det-email"></span></p>
-                <p>📍 <b>Location:</b> <span id="det-loc"></span></p>
+            <div class="bg-bs-blue/5 border border-bs-blue/10 p-5 rounded-2xl text-sm space-y-3 mb-6">
+                <div class="flex justify-between items-center"><span class="text-slate-400">Plan</span><span class="font-bold text-bs-purple text-lg">₦<span id="det-plan"></span></span></div>
+                <div class="flex justify-between items-center"><span class="text-slate-400">Telegram</span><span id="det-tg" class="font-mono text-xs bg-white px-2 py-1 rounded border border-slate-200"></span></div>
+                <div class="flex justify-between items-center"><span class="text-slate-400">Email</span><span id="det-email" class="font-medium"></span></div>
+                <div class="flex justify-between items-center"><span class="text-slate-400">Location</span><span id="det-loc" class="italic"></span></div>
             </div>
 
-            <p class="text-xs font-bold text-gray-400 uppercase">Uploaded Receipts</p>
-            <div id="det-img-grid" class="grid grid-cols-2 gap-2 my-2"></div>
+            <div id="det-img-grid" class="grid grid-cols-2 gap-3 mb-8"></div>
             
-            <div class="flex gap-2" id="action-buttons">
-                <button onclick="updateStatus('verified', null, event)" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold shadow hover:bg-green-700">Verify ✅</button>
-                <button onclick="updateStatus('rejected', prompt('Enter reason for rejection:'), event)" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold shadow hover:bg-red-700">Reject ❌</button>
+            <div class="flex gap-3" id="action-buttons">
+                <button onclick="updateStatus('verified', null, event)" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all">Verify ✅</button>
+                <button onclick="updateStatus('rejected', prompt('Enter reason for rejection:'), event)" class="flex-1 bg-rose-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-rose-100 hover:bg-rose-700 transition-all">Reject ❌</button>
             </div>
-            
-            <button onclick="location.search='?view=admin'" class="w-full text-gray-400 text-sm hover:underline">← Back to List</button>
         </div>
     </div>
 
     <script>
-        // --- CONFIG ---
         const SUPABASE_URL = 'https://qgrluobqmyzpaeblonbx.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_V2uL6AajUGNGUfazQXj78Q_klGpJ4Ad'; 
         const BACKEND_URL = 'https://birthsafe-backend.onrender.com';
 
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // Global variable to store payments for searching
         let allPayments = [];
 
-        // --- ROUTER & INIT ---
         window.onload = () => {
             const params = new URLSearchParams(window.location.search);
             const pid = params.get('id');
@@ -144,12 +183,11 @@
             }
         };
 
-        // File Selection UI
         document.getElementById('receipts').onchange = (e) => {
-            document.getElementById('file-count').innerText = `${e.target.files.length} image(s) selected`;
+            document.getElementById('file-count').innerText = `${e.target.files.length} Receipt(s) Selected`;
         };
 
-        // --- SUBMISSION LOGIC ---
+        // SUBMIT PAYMENT
         document.getElementById('payment-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
@@ -165,92 +203,79 @@
                 for (let file of files) {
                     const path = `receipts/${Date.now()}_${file.name.replace(/\s/g, '_')}`;
                     const { error } = await sb.storage.from('receipts').upload(path, file);
-                    if (error) throw new Error("Image Upload Error: " + error.message);
-                    
-                    const { data } = sb.storage.from('receipts').getPublicUrl(path);
-                    urls.push(data.publicUrl);
+                    if (error) throw error;
+                    urls.push(sb.storage.from('receipts').getPublicUrl(path).data.publicUrl);
                 }
-
-                const payload = {
-                    fullName: fullName,
-                    email: document.getElementById('email').value,
-                    plan: document.getElementById('plan').value,
-                    telegramNumber: document.getElementById('telegramNumber').value,
-                    country: document.getElementById('country').value,
-                    state: document.getElementById('state').value,
-                    receiptUrls: urls
-                };
 
                 const res = await fetch(`${BACKEND_URL}/api/submit-payment`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        fullName: fullName,
+                        email: document.getElementById('email').value,
+                        plan: document.getElementById('plan').value,
+                        telegramNumber: document.getElementById('telegramNumber').value,
+                        country: document.getElementById('country').value,
+                        state: document.getElementById('state').value,
+                        receiptUrls: urls
+                    })
                 });
                 
-                if (!res.ok) throw new Error("Server failed to process data.");
+                if (!res.ok) throw new Error("Backend server error");
 
                 document.getElementById('user-first-name').innerText = firstName;
                 document.getElementById('payment-form').classList.add('hidden');
                 document.getElementById('success-msg').classList.remove('hidden');
 
             } catch (err) { 
-                alert("Submission Failed: " + err.message); 
-                btn.disabled = false; 
-                btn.innerText = "Submit Verification"; 
+                alert("Submission Error: " + err.message); 
+                btn.disabled = false; btn.innerText = "Submit Verification"; 
             }
         };
 
-        // --- ADMIN: LOAD LIST ---
+        // ADMIN: LIST LOGIC
         async function loadList() {
             const { data, error } = await sb.from('payments').select('*').order('created_at', {ascending: false});
             if (error) return alert("Load Error: " + error.message);
-
-            allPayments = data; // Store data globally
-            renderList(allPayments); // Initial render
+            allPayments = data;
+            renderList(allPayments);
         }
 
-        // --- SEARCH & FILTER LOGIC ---
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             const filtered = allPayments.filter(p => 
                 p.full_name.toLowerCase().includes(term) ||
                 p.email.toLowerCase().includes(term) ||
-                (p.telegram_number && p.telegram_number.includes(term)) ||
-                p.status.toLowerCase().includes(term)
+                (p.telegram_number && p.telegram_number.includes(term))
             );
             renderList(filtered);
         });
 
         function filterList(status) {
-            if (status === 'all') {
-                renderList(allPayments);
-            } else {
-                const filtered = allPayments.filter(p => p.status === status);
-                renderList(filtered);
-            }
+            renderList(status === 'all' ? allPayments : allPayments.filter(p => p.status === status));
         }
 
         function renderList(data) {
             const container = document.getElementById('list-container');
-            if (data.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500 py-10">No matching payments found.</p>';
-                return;
-            }
+            if (data.length === 0) { container.innerHTML = '<div class="text-center py-20 text-slate-400">No results found</div>'; return; }
 
             container.innerHTML = data.map(p => `
-                <div onclick="location.search='?id=${p.id}'" class="bg-white p-4 rounded-xl shadow border-l-4 ${p.status === 'verified' ? 'border-green-500' : p.status === 'rejected' ? 'border-red-500' : 'border-yellow-400'} cursor-pointer hover:bg-pink-50 transition">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <b class="text-gray-800">${p.full_name}</b>
-                            <p class="text-xs text-gray-500">₦${p.plan_amount} • ${p.telegram_number || 'No TG'}</p>
-                        </div>
-                        <span class="text-[10px] font-bold uppercase bg-white border px-2 py-1 rounded shadow-sm">${p.status}</span>
+                <div onclick="location.search='?id=${p.id}'" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between cursor-pointer hover:shadow-md hover:border-bs-blue/40 transition-all group">
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">₦${p.plan_amount}</span>
+                        <b class="text-slate-800 block text-lg leading-tight">${p.full_name}</b>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-black uppercase px-3 py-1 rounded-full border ${p.status === 'verified' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : p.status === 'rejected' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-amber-50 text-amber-600 border-amber-100'}">
+                            ${p.status}
+                        </span>
+                        <span class="text-slate-300 group-hover:text-bs-blue text-xl">›</span>
                     </div>
                 </div>
             `).join('');
         }
 
-        // --- ADMIN: LOAD DETAIL ---
+        // ADMIN: DETAIL LOGIC
         async function loadDetail(id) {
             const { data, error } = await sb.from('payments').select('*').eq('id', id).single();
             if (error) return;
@@ -262,26 +287,26 @@
             document.getElementById('det-loc').innerText = `${data.state_province || ''}, ${data.country || ''}`;
 
             document.getElementById('det-img-grid').innerHTML = (data.receipt_urls || []).map(url => `
-                <a href="${url}" target="_blank"><img src="${url}" class="rounded-lg h-32 w-full object-cover border"></a>
+                <a href="${url}" target="_blank" class="rounded-2xl overflow-hidden aspect-square border border-slate-100 shadow-sm hover:opacity-90">
+                    <img src="${url}" class="w-full h-full object-cover">
+                </a>
             `).join('');
 
-            // Hide buttons if already processed
             if(data.status !== 'pending') {
                 document.getElementById('action-buttons').innerHTML = `
-                    <div class="w-full text-center py-2 bg-gray-100 rounded-xl font-bold text-gray-500 uppercase">
-                        Processed as: ${data.status}
+                    <div class="w-full text-center py-4 bg-slate-50 rounded-2xl font-black text-slate-400 uppercase border border-slate-100 tracking-widest">
+                        Already ${data.status}
                     </div>`;
             }
         }
 
-        // --- ADMIN: UPDATE STATUS ---
+        // UPDATE ACTION
         async function updateStatus(s, r, event) {
-            if (s === 'rejected' && (r === null || r.trim() === "")) return alert("Reason required.");
-
+            if (s === 'rejected' && (r === null || r.trim() === "")) return alert("Reason required for rejection.");
+            
             const btn = event.currentTarget;
             const originalText = btn.innerText;
-            btn.innerText = "Processing...";
-            btn.disabled = true;
+            btn.innerText = "Processing..."; btn.disabled = true;
 
             try {
                 const id = new URLSearchParams(location.search).get('id');
@@ -291,18 +316,13 @@
                     body: JSON.stringify({ id, status: s, reason: r })
                 });
 
-                const result = await res.json();
-
-                if (res.ok && result.success) {
-                    alert(`SUCCESS: Payment marked as ${s.toUpperCase()}!`);
+                if ((await res.json()).success) {
+                    alert("Action successful!");
                     location.search = '?view=admin';
-                } else {
-                    throw new Error("Backend update failed.");
-                }
+                } else throw new Error("Server error");
             } catch (err) {
                 alert("Error: " + err.message);
-                btn.innerText = originalText;
-                btn.disabled = false;
+                btn.innerText = originalText; btn.disabled = false;
             }
         }
     </script>
