@@ -58,7 +58,6 @@
                 </button>
             </form>
 
-            <!-- Personalized Success Message -->
             <div id="success-msg" class="hidden p-10 text-center animate-pulse">
                 <h2 class="text-3xl font-bold text-gray-800">✅ Received!</h2>
                 <p class="mt-2 text-gray-600 font-medium">
@@ -68,13 +67,28 @@
         </div>
     </div>
 
-    <!-- === VIEW 2: ADMIN LIST VIEW === -->
+    <!-- === VIEW 2: ADMIN LIST VIEW (With Search) === -->
     <div id="admin-list-view" class="hidden min-h-screen p-4 max-w-md mx-auto">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold text-gray-800">📋 Admin Dashboard</h2>
-            <button onclick="location.reload()" class="text-xs bg-gray-200 px-2 py-1 rounded">Refresh</button>
+            <h2 class="text-2xl font-bold text-gray-800">📋 Dashboard</h2>
+            <button onclick="location.reload()" class="text-xs bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">Refresh</button>
         </div>
-        <div id="list-container" class="space-y-3">Loading payments...</div>
+
+        <!-- SEARCH BAR -->
+        <div class="mb-4">
+            <input type="text" id="searchInput" placeholder="🔍 Search name, email, or status..." 
+                   class="w-full p-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-birthsafe shadow-sm">
+        </div>
+
+        <!-- FILTER TABS -->
+        <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+            <button onclick="filterList('all')" class="px-4 py-1.5 bg-gray-800 text-white rounded-full text-xs font-bold whitespace-nowrap">All</button>
+            <button onclick="filterList('pending')" class="px-4 py-1.5 bg-yellow-500 text-white rounded-full text-xs font-bold whitespace-nowrap">Pending</button>
+            <button onclick="filterList('verified')" class="px-4 py-1.5 bg-green-600 text-white rounded-full text-xs font-bold whitespace-nowrap">Verified</button>
+            <button onclick="filterList('rejected')" class="px-4 py-1.5 bg-red-600 text-white rounded-full text-xs font-bold whitespace-nowrap">Rejected</button>
+        </div>
+
+        <div id="list-container" class="space-y-3 pb-20">Loading payments...</div>
     </div>
 
     <!-- === VIEW 3: ADMIN DETAIL REVIEW === -->
@@ -93,7 +107,6 @@
             <div id="det-img-grid" class="grid grid-cols-2 gap-2 my-2"></div>
             
             <div class="flex gap-2" id="action-buttons">
-                <!-- Using (event) to handle button feedback -->
                 <button onclick="updateStatus('verified', null, event)" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold shadow hover:bg-green-700">Verify ✅</button>
                 <button onclick="updateStatus('rejected', prompt('Enter reason for rejection:'), event)" class="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold shadow hover:bg-red-700">Reject ❌</button>
             </div>
@@ -109,6 +122,9 @@
         const BACKEND_URL = 'https://birthsafe-backend.onrender.com';
 
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Global variable to store payments for searching
+        let allPayments = [];
 
         window.onload = () => {
             const params = new URLSearchParams(window.location.search);
@@ -126,6 +142,7 @@
             }
         };
 
+        // File Selection UI
         document.getElementById('receipts').onchange = (e) => {
             document.getElementById('file-count').innerText = `${e.target.files.length} image(s) selected`;
         };
@@ -135,7 +152,7 @@
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
             const fullName = document.getElementById('fullName').value;
-            const firstName = fullName.trim().split(' ')[0]; // Extract first name
+            const firstName = fullName.trim().split(' ')[0];
             
             btn.innerText = "Processing..."; btn.disabled = true;
 
@@ -145,11 +162,11 @@
 
                 for (let file of files) {
                     const path = `receipts/${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-                    const { error: uploadError } = await sb.storage.from('receipts').upload(path, file);
-                    if (uploadError) throw new Error("Image Upload Error: " + uploadError.message);
+                    const { error } = await sb.storage.from('receipts').upload(path, file);
+                    if (error) throw new Error("Image Upload Error: " + error.message);
                     
-                    const { data: urlData } = sb.storage.from('receipts').getPublicUrl(path);
-                    urls.push(urlData.publicUrl);
+                    const { data } = sb.storage.from('receipts').getPublicUrl(path);
+                    urls.push(data.publicUrl);
                 }
 
                 const payload = {
@@ -170,7 +187,6 @@
                 
                 if (!res.ok) throw new Error("Server failed to process data.");
 
-                // Personalize UI
                 document.getElementById('user-first-name').innerText = firstName;
                 document.getElementById('payment-form').classList.add('hidden');
                 document.getElementById('success-msg').classList.remove('hidden');
@@ -187,8 +203,39 @@
             const { data, error } = await sb.from('payments').select('*').order('created_at', {ascending: false});
             if (error) return alert("Load Error: " + error.message);
 
+            allPayments = data; // Store data globally
+            renderList(allPayments); // Initial render
+        }
+
+        // --- SEARCH & FILTER LOGIC ---
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allPayments.filter(p => 
+                p.full_name.toLowerCase().includes(term) ||
+                p.email.toLowerCase().includes(term) ||
+                (p.telegram_number && p.telegram_number.includes(term)) ||
+                p.status.toLowerCase().includes(term)
+            );
+            renderList(filtered);
+        });
+
+        function filterList(status) {
+            if (status === 'all') {
+                renderList(allPayments);
+            } else {
+                const filtered = allPayments.filter(p => p.status === status);
+                renderList(filtered);
+            }
+        }
+
+        function renderList(data) {
             const container = document.getElementById('list-container');
-            container.innerHTML = data.length ? data.map(p => `
+            if (data.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-10">No matching payments found.</p>';
+                return;
+            }
+
+            container.innerHTML = data.map(p => `
                 <div onclick="location.search='?id=${p.id}'" class="bg-white p-4 rounded-xl shadow border-l-4 ${p.status === 'verified' ? 'border-green-500' : p.status === 'rejected' ? 'border-red-500' : 'border-yellow-400'} cursor-pointer hover:bg-pink-50 transition">
                     <div class="flex justify-between items-center">
                         <div>
@@ -198,7 +245,7 @@
                         <span class="text-[10px] font-bold uppercase bg-white border px-2 py-1 rounded shadow-sm">${p.status}</span>
                     </div>
                 </div>
-            `).join('') : '<p class="text-center py-10">No requests yet.</p>';
+            `).join('');
         }
 
         // --- ADMIN: LOAD DETAIL ---
@@ -216,45 +263,4 @@
                 <a href="${url}" target="_blank"><img src="${url}" class="rounded-lg h-32 w-full object-cover border"></a>
             `).join('');
 
-            if(data.status !== 'pending') {
-                document.getElementById('action-buttons').innerHTML = `
-                    <div class="w-full text-center py-2 bg-gray-100 rounded-xl font-bold text-gray-500 uppercase">
-                        Processed as: ${data.status}
-                    </div>`;
-            }
-        }
-
-        // --- ADMIN: UPDATE STATUS (VERIFY/REJECT) ---
-        async function updateStatus(s, r, event) {
-            if (s === 'rejected' && r === null) return;
-            if (s === 'rejected' && r.trim() === "") return alert("Reason required.");
-
-            // Feedback: Change button appearance
-            const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerText = "Processing...";
-            btn.disabled = true;
-
-            try {
-                const id = new URLSearchParams(location.search).get('id');
-                const res = await fetch(`${BACKEND_URL}/api/verify-payment`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ id, status: s, reason: r })
-                });
-
-                if (res.ok) {
-                    alert(`SUCCESS: Payment marked as ${s.toUpperCase()}!`);
-                    location.search = '?view=admin';
-                } else {
-                    throw new Error("Backend update failed.");
-                }
-            } catch (err) {
-                alert("Error: " + err.message);
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
-        }
-    </script>
-</body>
-</html>
+            if(data.status !== '
