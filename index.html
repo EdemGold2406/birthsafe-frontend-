@@ -32,10 +32,11 @@
                 <input type="email" id="email" placeholder="Email Address" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-birthsafe">
                 
                 <label class="text-xs font-bold text-gray-500 uppercase">Select Your Package</label>
+                <!-- UPDATED PACKAGE NAMES AND PRICES -->
                 <select id="plan" class="w-full p-3 border rounded-xl bg-white outline-none focus:ring-2 focus:ring-birthsafe">
-                    <option value="20800">Basic Plan (₦20,800)</option>
-                    <option value="25000">Standard Plan (₦25,000)</option>
-                    <option value="32000">Premium Plan (₦32,000)</option>
+                    <option value="20800">Partial Package (₦20,800)</option>
+                    <option value="25500">Standard Package (₦25,500)</option>
+                    <option value="32000">Pregnancy Safeguarding Package (₦32,000)</option>
                 </select>
 
                 <label class="text-xs font-bold text-gray-500 uppercase">Contact & Location</label>
@@ -126,6 +127,7 @@
         // Global variable to store payments for searching
         let allPayments = [];
 
+        // --- ROUTER & INIT ---
         window.onload = () => {
             const params = new URLSearchParams(window.location.search);
             const pid = params.get('id');
@@ -263,4 +265,46 @@
                 <a href="${url}" target="_blank"><img src="${url}" class="rounded-lg h-32 w-full object-cover border"></a>
             `).join('');
 
-            if(data.status !== '
+            // Hide buttons if already processed
+            if(data.status !== 'pending') {
+                document.getElementById('action-buttons').innerHTML = `
+                    <div class="w-full text-center py-2 bg-gray-100 rounded-xl font-bold text-gray-500 uppercase">
+                        Processed as: ${data.status}
+                    </div>`;
+            }
+        }
+
+        // --- ADMIN: UPDATE STATUS ---
+        async function updateStatus(s, r, event) {
+            if (s === 'rejected' && (r === null || r.trim() === "")) return alert("Reason required.");
+
+            const btn = event.currentTarget;
+            const originalText = btn.innerText;
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+
+            try {
+                const id = new URLSearchParams(location.search).get('id');
+                const res = await fetch(`${BACKEND_URL}/api/verify-payment`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ id, status: s, reason: r })
+                });
+
+                const result = await res.json();
+
+                if (res.ok && result.success) {
+                    alert(`SUCCESS: Payment marked as ${s.toUpperCase()}!`);
+                    location.search = '?view=admin';
+                } else {
+                    throw new Error("Backend update failed.");
+                }
+            } catch (err) {
+                alert("Error: " + err.message);
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
